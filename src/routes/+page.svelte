@@ -1,34 +1,14 @@
 <script lang="ts">
-	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import StorefrontCard from '$lib/components/storefront-card.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
-	import * as InputGroup from '$lib/components/ui/input-group/index.js';
-	import Input from '$lib/components/ui/input/input.svelte';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { insertStore, selectStores, updateStore } from '$lib/remote/stores.remote';
-	import type { StoreUpdate } from '$lib/types/store.types';
-	import type { Store } from '$lib/types/stores.type';
-	import { CircleCheckIcon, CircleXIcon, InfoIcon, StoreIcon } from '@lucide/svelte';
-	import cronstrue from 'cronstrue';
+	import { insertStore, selectStores } from '$lib/remote/stores.remote';
+	import { StoreIcon } from '@lucide/svelte';
 
 	let stores = $state(await selectStores());
-
-	const cronCheckRegex =
-		/^(\*|([0-5]?\d)) (\*|([01]?\d|2[0-3])) (\*|([01]?\d|2[0-3])) (\*|([1-9]|[12]\d|3[01])) (\*|(0?[1-9]|1[0-2]))$/;
-
-	function validateCron(cron: string) {
-		return cronCheckRegex.test(cron);
-	}
-
-	function cronToText(cron: string) {
-		return cronstrue.toString(cron);
-	}
 
 	function addSteamStore() {
 		insertStore({ id: 'steam' });
@@ -36,38 +16,6 @@
 
 	function addEpicStore() {
 		insertStore({ id: 'epic' });
-	}
-
-	function mapIdToName(id: Store) {
-		switch (id) {
-			case 'steam':
-				return 'Steam';
-			case 'epic':
-				return 'Epic Games';
-			default:
-				return 'Unknown Store';
-		}
-	}
-
-	function mapIdToLogo(id: Store) {
-		switch (id) {
-			case 'steam':
-				return 'steam_logo.png';
-			case 'epic':
-				return 'epic_logo.png';
-			default:
-				return 'default_logo.png';
-		}
-	}
-
-	function loginIntoStore(store: StoreUpdate) {
-		store.login = true;
-		updateStore(store);
-	}
-
-	function toggleStoreActive(store: StoreUpdate) {
-		store.active = !store.active;
-		updateStore(store);
 	}
 </script>
 
@@ -97,105 +45,7 @@
 
 				<div class="flex w-full flex-row items-start gap-10">
 					{#each stores as store}
-						<Card.Root class="group relative w-90">
-							<Card.Header>
-								<Card.Title class="flex flex-row items-center gap-2">
-									{#if store.login}
-										<Switch
-											class="cursor-pointer"
-											checked={store.active}
-											onCheckedChange={() => toggleStoreActive(store)}
-										/>
-										{mapIdToName(store.id)}
-										<Badge class="z-10 ml-auto">Logged In</Badge>
-									{:else}
-										{mapIdToName(store.id)}
-										<Badge variant="destructive" class="z-10 ml-auto">Not Logged In</Badge>
-									{/if}
-								</Card.Title>
-							</Card.Header>
-							<Card.Content class="grid grid-cols-3 gap-3 gap-y-6 py-2">
-								<img
-									src={mapIdToLogo(store.id)}
-									alt={mapIdToName(store.id) + ' logo'}
-									class="absolute top-0 right-0 h-full translate-x-1/3 py-3 opacity-50 transition-transform duration-200 group-hover:translate-x-full"
-									class:grayscale={!store.active}
-								/>
-
-								{#if store.login}
-									<div class="z-10 col-span-2 flex w-full flex-col gap-1.5">
-										<Label for="last-redeem" class="ml-1.5">Last Update</Label>
-										<Input
-											type="text"
-											id="last-redeem"
-											placeholder="Last Update"
-											disabled
-											value="2026-01-01 12:00:00"
-										/>
-									</div>
-
-									<div class="z-10 flex w-full flex-col gap-1.5">
-										<Label for="last-status" class="ml-1.5">Last Status</Label>
-										<Input
-											type="text"
-											id="last-status"
-											placeholder="Last Status"
-											disabled
-											value="Error"
-										/>
-									</div>
-
-									<div class="z-10 col-span-3 flex w-full flex-col gap-1.5">
-										<Label for="last-status" class="ml-1.5">Cron</Label>
-
-										<InputGroup.Root class="backdrop-blur-2xl">
-											<InputGroup.Input
-												id="last-status"
-												placeholder="0 9 * * *"
-												bind:value={store.cron}
-											/>
-											<InputGroup.Addon>
-												<Tooltip.Root>
-													<Tooltip.Trigger>
-														{#snippet child({ props })}
-															<InputGroup.Button {...props} class="rounded-full" size="icon-xs">
-																<InfoIcon />
-															</InputGroup.Button>
-														{/snippet}
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														<a href="https://crontab.guru/">What is a cron?</a>
-													</Tooltip.Content>
-												</Tooltip.Root>
-											</InputGroup.Addon>
-											<InputGroup.Addon align="inline-end">
-												{#if validateCron(store.cron)}
-													<CircleCheckIcon class="text-green-500" />
-												{:else}
-													<CircleXIcon class="text-red-500" />
-												{/if}
-											</InputGroup.Addon>
-										</InputGroup.Root>
-
-										{#if !validateCron(store.cron)}
-											<p class="ml-1.5 text-sm text-red-500">Invalid cron expression</p>
-										{:else}
-											<p class="ml-1.5 text-sm">{cronToText(store.cron)}</p>
-										{/if}
-									</div>
-								{/if}
-							</Card.Content>
-							{#if store.login}
-								<Card.Footer class="grid grid-cols-2 gap-2">
-									<Button class="z-10">Redeem Now</Button>
-									<Button class="z-10" variant="outline">Re-Login</Button>
-								</Card.Footer>
-							{:else}
-								<Card.Footer>
-									<Button class="z-10 w-full" onclick={() => loginIntoStore(store)}>Login</Button>
-								</Card.Footer>
-							{/if}
-						</Card.Root>
+						<StorefrontCard {store} />
 					{/each}
 				</div>
 			</div>

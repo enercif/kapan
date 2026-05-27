@@ -4,6 +4,7 @@
 	import logo from '$lib/assets/logo.png';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ModeToggle from '$lib/components/ui/mode-toggle/mode-toggle.svelte';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { navigation } from '$lib/navigation';
 	import { ModeWatcher } from 'mode-watcher';
@@ -14,6 +15,7 @@
 
 <svelte:head><link rel="icon" href={logo} /></svelte:head>
 
+<Toaster richColors position="top-center" />
 <ModeWatcher />
 <main class="flex h-screen w-screen flex-col gap-0 bg-sidebar">
 	<div class="relative flex flex-row items-center justify-between px-6 py-2">
