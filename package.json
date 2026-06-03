@@ -21,7 +21,6 @@
 		"@fontsource-variable/inter": "^5.2.8",
 		"@internationalized/date": "^3.12.1",
 		"@lucide/svelte": "^1.16.0",
-		"@playwright/test": "^1.59.1",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.60.1",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
@@ -50,6 +49,7 @@
 		"better-sqlite3": "^12.8.0",
 		"cronstrue": "^3.14.0",
 		"mode-watcher": "^1.1.0",
+		"playwright": "^1.60.0",
 		"runed": "^0.37.1",
 		"zod": "^4.4.3"
 	}

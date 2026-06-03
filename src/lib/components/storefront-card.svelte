@@ -66,6 +66,7 @@
 
 	function loginIntoStore() {
 		updateStore({ ...store, login: true });
+		store.login = true;
 	}
 
 	function saveCron() {

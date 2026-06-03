@@ -5,17 +5,30 @@
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { AVAILABLE_STORES } from '$lib/const/available-stores';
 	import { insertStore, selectStores } from '$lib/remote/stores.remote';
+	import type { Store } from '$lib/types/stores.type';
 	import { StoreIcon } from '@lucide/svelte';
 
 	let stores = $state(await selectStores());
 
-	function addSteamStore() {
-		insertStore({ id: 'steam' });
+	async function insertStoreWithId(id: Store) {
+		const result = await insertStore({ id });
+		stores.push(result);
 	}
 
-	function addEpicStore() {
-		insertStore({ id: 'epic' });
+	const storeIds = $derived(stores.map((s) => s.id));
+	const availableToAdd = $derived(AVAILABLE_STORES.filter((s) => !storeIds.includes(s)));
+
+	function idToLabel(id: Store) {
+		switch (id) {
+			case 'steam':
+				return 'Steam';
+			case 'epic':
+				return 'Epic Games';
+			default:
+				return id;
+		}
 	}
 </script>
 
@@ -32,13 +45,16 @@
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>
 						{#snippet child({ props })}
-							<Button {...props}>Link new Store</Button>
+							<Button {...props} disabled={availableToAdd.length === 0}>Link new Store</Button>
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content>
 						<DropdownMenu.Group>
-							<DropdownMenu.Item onclick={addSteamStore}>Steam</DropdownMenu.Item>
-							<DropdownMenu.Item onclick={addEpicStore}>Epic Games</DropdownMenu.Item>
+							{#each availableToAdd as storeId}
+								<DropdownMenu.Item onclick={() => insertStoreWithId(storeId)}>
+									{idToLabel(storeId)}
+								</DropdownMenu.Item>
+							{/each}
 						</DropdownMenu.Group>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
@@ -69,8 +85,12 @@
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
 							<DropdownMenu.Group>
-								<DropdownMenu.Item onclick={addSteamStore}>Steam</DropdownMenu.Item>
-								<DropdownMenu.Item onclick={addEpicStore}>Epic Games</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={() => insertStoreWithId('steam')}
+									>Steam</DropdownMenu.Item
+								>
+								<DropdownMenu.Item onclick={() => insertStoreWithId('epic')}
+									>Epic Games</DropdownMenu.Item
+								>
 							</DropdownMenu.Group>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>

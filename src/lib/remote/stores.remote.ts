@@ -10,11 +10,15 @@ export const selectStores = query(async () => {
 });
 
 export const insertStore = command(storeInsertSchema, async (storeInsert) => {
-	await db.insert(storeTable).values(storeInsert);
-	void selectStores().refresh();
+	const [result] = await db.insert(storeTable).values(storeInsert).returning();
+	return result;
 });
 
 export const updateStore = command(storeUpdateSchema, async (storeUpdate) => {
-	await db.update(storeTable).set(storeUpdate).where(eq(storeTable.id, storeUpdate.id));
-	void selectStores().refresh();
+	const [result] = await db
+		.update(storeTable)
+		.set(storeUpdate)
+		.where(eq(storeTable.id, storeUpdate.id))
+		.returning();
+	return result;
 });
