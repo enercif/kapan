@@ -32,6 +32,7 @@
 	import * as InputGroup from '$lib/components/ui/input-group/index.js';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { loginEpic, redeemEpic } from '$lib/remote/epic.remote';
@@ -198,11 +199,21 @@
 	<Card.Footer class="flex flex-row gap-2">
 		{#if store.login}
 			<Button class="z-10 grow" disabled={!active || currentRedeem} onclick={redeem}>
-				{currentRedeem ? 'Redeeming...' : 'Redeem Now'}
+				{#if currentRedeem}
+					<Spinner />
+					Redeeming...
+				{:else}
+					Redeem Now
+				{/if}
 			</Button>
 		{:else}
 			<Button class="z-10 grow" onclick={login} disabled={currentLogin}>
-				{currentLogin ? 'Logging in...' : 'Login'}
+				{#if currentLogin}
+					<Spinner />
+					Logging in...
+				{:else}
+					Login
+				{/if}
 			</Button>
 		{/if}
 	</Card.Footer>

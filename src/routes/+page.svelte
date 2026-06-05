@@ -108,14 +108,6 @@
 			</Empty.Root>
 		{/if}
 
-		<Button onclick={() => testRedeem()} disabled={redeeming}>
-			{#if redeeming}
-				Testing Redeem...
-			{:else}
-				Test Redeem
-			{/if}
-		</Button>
-
 		<Tabs.Root value="history">
 			<Tabs.List>
 				<Tabs.Trigger value="history">History</Tabs.Trigger>
