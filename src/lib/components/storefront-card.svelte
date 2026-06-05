@@ -1,17 +1,27 @@
 <script module lang="ts">
-	import type { Store } from '$lib/types/stores.type';
+	import type { StoreID } from '$lib/types/store-id.type';
 
 	const CRON_REGEX =
 		/^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})|(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)$/;
 
-	const STORE_NAMES: Record<Store, string> = {
+	const STORE_NAMES: Record<StoreID, string> = {
 		steam: 'Steam',
 		epic: 'Epic Games'
 	};
 
-	const STORE_LOGOS: Record<Store, string> = {
+	const STORE_LOGOS: Record<StoreID, string> = {
 		steam: 'steam_logo.png',
 		epic: 'epic_logo.png'
+	};
+
+	const loginFn: Record<StoreID, RemoteCommand<void, boolean>> = {
+		steam: loginSteam,
+		epic: loginEpic
+	};
+
+	const redeemFn: Record<StoreID, RemoteCommand<void, void>> = {
+		steam: redeemSteam,
+		epic: redeemEpic
 	};
 </script>
 
@@ -24,9 +34,12 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { loginEpic, redeemEpic } from '$lib/remote/epic.remote';
+	import { loginSteam, redeemSteam } from '$lib/remote/steam.remote';
 	import { updateStore } from '$lib/remote/stores.remote';
 	import type { StoreSelect } from '$lib/types/store.types';
 	import { CircleCheckIcon, CircleXIcon, InfoIcon } from '@lucide/svelte';
+	import type { RemoteCommand } from '@sveltejs/kit';
 	import cronstrue from 'cronstrue/i18n';
 	import { toast } from 'svelte-sonner';
 	import { backOut } from 'svelte/easing';
@@ -41,6 +54,9 @@
 	let active = $derived(store.active);
 	let cron = $derived(store.cron);
 	let savedCron = $derived(store.cron);
+
+	let currentLogin = $state(false);
+	let currentRedeem = $state(false);
 
 	const storeName = $derived(STORE_NAMES[store.id] ?? store.id);
 	const storeLogo = $derived(STORE_LOGOS[store.id]);
@@ -64,9 +80,17 @@
 		});
 	}
 
-	function loginIntoStore() {
-		updateStore({ ...store, login: true });
-		store.login = true;
+	async function login() {
+		currentLogin = true;
+		const result = await loginFn[store.id]();
+		if (result) {
+			updateStore({ ...store, login: true });
+			store.login = true;
+			toast.success(`Logged into ${storeName} successfully`);
+		} else {
+			toast.error(`Failed to log into ${storeName}`);
+		}
+		currentLogin = false;
 	}
 
 	function saveCron() {
@@ -75,8 +99,10 @@
 		toast.success(`Cron updated for ${storeName}`);
 	}
 
-	function redeemNow() {
-		// TODO: implement redeem logic
+	async function redeem() {
+		currentRedeem = true;
+		await redeemFn[store.id]();
+		currentRedeem = false;
 	}
 </script>
 
@@ -171,9 +197,13 @@
 
 	<Card.Footer class="flex flex-row gap-2">
 		{#if store.login}
-			<Button class="z-10 grow" disabled={!active} onclick={redeemNow}>Redeem Now</Button>
+			<Button class="z-10 grow" disabled={!active || currentRedeem} onclick={redeem}>
+				{currentRedeem ? 'Redeeming...' : 'Redeem Now'}
+			</Button>
 		{:else}
-			<Button class="z-10 grow" onclick={loginIntoStore}>Login</Button>
+			<Button class="z-10 grow" onclick={login} disabled={currentLogin}>
+				{currentLogin ? 'Logging in...' : 'Login'}
+			</Button>
 		{/if}
 	</Card.Footer>
 </Card.Root>

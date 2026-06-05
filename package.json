@@ -49,7 +49,8 @@
 		"better-sqlite3": "^12.8.0",
 		"cronstrue": "^3.14.0",
 		"mode-watcher": "^1.1.0",
-		"playwright": "^1.60.0",
+		"patchright": "^1.60.2",
+		"playwright-ghost": "^0.18.0",
 		"runed": "^0.37.1",
 		"zod": "^4.4.3"
 	}

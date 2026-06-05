@@ -5,14 +5,15 @@
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { AVAILABLE_STORES } from '$lib/const/available-stores';
+	import { AVAILABLE_STORES } from '$lib/const/store-ids';
+	import { redeemEpic } from '$lib/remote/epic.remote';
 	import { insertStore, selectStores } from '$lib/remote/stores.remote';
-	import type { Store } from '$lib/types/stores.type';
+	import type { StoreID } from '$lib/types/store-id.type';
 	import { StoreIcon } from '@lucide/svelte';
 
 	let stores = $state(await selectStores());
 
-	async function insertStoreWithId(id: Store) {
+	async function insertStoreWithId(id: StoreID) {
 		const result = await insertStore({ id });
 		stores.push(result);
 	}
@@ -20,7 +21,7 @@
 	const storeIds = $derived(stores.map((s) => s.id));
 	const availableToAdd = $derived(AVAILABLE_STORES.filter((s) => !storeIds.includes(s)));
 
-	function idToLabel(id: Store) {
+	function idToLabel(id: StoreID) {
 		switch (id) {
 			case 'steam':
 				return 'Steam';
@@ -29,6 +30,15 @@
 			default:
 				return id;
 		}
+	}
+
+	let redeeming = $state(false);
+
+	function testRedeem() {
+		redeeming = true;
+		redeemEpic()
+			.then((result) => console.log(result))
+			.finally(() => (redeeming = false));
 	}
 </script>
 
@@ -97,6 +107,14 @@
 				</Empty.Content>
 			</Empty.Root>
 		{/if}
+
+		<Button onclick={() => testRedeem()} disabled={redeeming}>
+			{#if redeeming}
+				Testing Redeem...
+			{:else}
+				Test Redeem
+			{/if}
+		</Button>
 
 		<Tabs.Root value="history">
 			<Tabs.List>
