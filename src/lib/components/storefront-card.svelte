@@ -1,30 +1,3 @@
-<script module lang="ts">
-	import type { StoreID } from '$lib/types/store-id.type';
-
-	const CRON_REGEX =
-		/^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})|(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)$/;
-
-	const STORE_NAMES: Record<StoreID, string> = {
-		steam: 'Steam',
-		epic: 'Epic Games'
-	};
-
-	const STORE_LOGOS: Record<StoreID, string> = {
-		steam: 'steam_logo.png',
-		epic: 'epic_logo.png'
-	};
-
-	const loginFn: Record<StoreID, RemoteCommand<void, boolean>> = {
-		steam: loginSteam,
-		epic: loginEpic
-	};
-
-	const redeemFn: Record<StoreID, RemoteCommand<void, void>> = {
-		steam: redeemSteam,
-		epic: redeemEpic
-	};
-</script>
-
 <script lang="ts">
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -35,12 +8,11 @@
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { loginEpic, redeemEpic } from '$lib/remote/epic.remote';
-	import { loginSteam, redeemSteam } from '$lib/remote/steam.remote';
+	import { STORE_LOGOS, STORE_NAMES, loginFn, redeemFn } from '$lib/const/maps';
+	import { CRON_REGEX } from '$lib/const/regex';
 	import { updateStore } from '$lib/remote/stores.remote';
 	import type { StoreSelect } from '$lib/types/store.types';
 	import { CircleCheckIcon, CircleXIcon, InfoIcon } from '@lucide/svelte';
-	import type { RemoteCommand } from '@sveltejs/kit';
 	import cronstrue from 'cronstrue/i18n';
 	import { toast } from 'svelte-sonner';
 	import { backOut } from 'svelte/easing';

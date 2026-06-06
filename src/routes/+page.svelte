@@ -1,12 +1,13 @@
 <script lang="ts">
+	import HistoryTable from '$lib/components/history-table.svelte';
+	import NotificationsTable from '$lib/components/notifications-table.svelte';
 	import StorefrontCard from '$lib/components/storefront-card.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { STORE_NAMES } from '$lib/const/maps';
 	import { AVAILABLE_STORES } from '$lib/const/store-ids';
-	import { redeemEpic } from '$lib/remote/epic.remote';
 	import { insertStore, selectStores } from '$lib/remote/stores.remote';
 	import type { StoreID } from '$lib/types/store-id.type';
 	import { StoreIcon } from '@lucide/svelte';
@@ -20,26 +21,6 @@
 
 	const storeIds = $derived(stores.map((s) => s.id));
 	const availableToAdd = $derived(AVAILABLE_STORES.filter((s) => !storeIds.includes(s)));
-
-	function idToLabel(id: StoreID) {
-		switch (id) {
-			case 'steam':
-				return 'Steam';
-			case 'epic':
-				return 'Epic Games';
-			default:
-				return id;
-		}
-	}
-
-	let redeeming = $state(false);
-
-	function testRedeem() {
-		redeeming = true;
-		redeemEpic()
-			.then((result) => console.log(result))
-			.finally(() => (redeeming = false));
-	}
 </script>
 
 <svelte:head>
@@ -52,22 +33,7 @@
 	<div class="grid grow gap-2 py-8">
 		{#if stores.length > 0}
 			<div class="flex flex-col items-start gap-4">
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger>
-						{#snippet child({ props })}
-							<Button {...props} disabled={availableToAdd.length === 0}>Link new Store</Button>
-						{/snippet}
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content>
-						<DropdownMenu.Group>
-							{#each availableToAdd as storeId}
-								<DropdownMenu.Item onclick={() => insertStoreWithId(storeId)}>
-									{idToLabel(storeId)}
-								</DropdownMenu.Item>
-							{/each}
-						</DropdownMenu.Group>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
+				{@render storeDropdown()}
 
 				<div class="flex w-full flex-row items-start gap-10">
 					{#each stores as store}
@@ -87,72 +53,41 @@
 					</Empty.Description>
 				</Empty.Header>
 				<Empty.Content>
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger>
-							{#snippet child({ props })}
-								<Button {...props}>Link Store</Button>
-							{/snippet}
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content>
-							<DropdownMenu.Group>
-								<DropdownMenu.Item onclick={() => insertStoreWithId('steam')}
-									>Steam</DropdownMenu.Item
-								>
-								<DropdownMenu.Item onclick={() => insertStoreWithId('epic')}
-									>Epic Games</DropdownMenu.Item
-								>
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+					{@render storeDropdown()}
 				</Empty.Content>
 			</Empty.Root>
 		{/if}
 
-		<Tabs.Root value="history">
+		<Tabs.Root value="history" class="h-60">
 			<Tabs.List>
 				<Tabs.Trigger value="history">History</Tabs.Trigger>
 				<Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="history">
-				<Table.Root>
-					<Table.Header>
-						<Table.Row>
-							<Table.Head class="w-25">Invoice</Table.Head>
-							<Table.Head>Status</Table.Head>
-							<Table.Head>Method</Table.Head>
-							<Table.Head class="text-end">Amount</Table.Head>
-						</Table.Row>
-					</Table.Header>
-					<Table.Body>
-						<Table.Row>
-							<Table.Cell class="font-medium">INV001</Table.Cell>
-							<Table.Cell>Paid</Table.Cell>
-							<Table.Cell>Credit Card</Table.Cell>
-							<Table.Cell class="text-end">$250.00</Table.Cell>
-						</Table.Row>
-					</Table.Body>
-				</Table.Root>
+				<HistoryTable />
 			</Tabs.Content>
 			<Tabs.Content value="notifications">
-				<Table.Root>
-					<Table.Header>
-						<Table.Row>
-							<Table.Head class="w-25">Invoice</Table.Head>
-							<Table.Head>Status</Table.Head>
-							<Table.Head>Method</Table.Head>
-							<Table.Head class="text-end">Amount</Table.Head>
-						</Table.Row>
-					</Table.Header>
-					<Table.Body>
-						<Table.Row>
-							<Table.Cell class="font-medium">INV001</Table.Cell>
-							<Table.Cell>Paid</Table.Cell>
-							<Table.Cell>Credit Card</Table.Cell>
-							<Table.Cell class="text-end">$250.00</Table.Cell>
-						</Table.Row>
-					</Table.Body>
-				</Table.Root>
+				<NotificationsTable />
 			</Tabs.Content>
 		</Tabs.Root>
 	</div>
 </div>
+
+{#snippet storeDropdown()}
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger>
+			{#snippet child({ props })}
+				<Button {...props} disabled={availableToAdd.length === 0}>Link new Store</Button>
+			{/snippet}
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			<DropdownMenu.Group>
+				{#each availableToAdd as storeId}
+					<DropdownMenu.Item onclick={() => insertStoreWithId(storeId)}>
+						{STORE_NAMES[storeId]}
+					</DropdownMenu.Item>
+				{/each}
+			</DropdownMenu.Group>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
+{/snippet}

@@ -1,0 +1,25 @@
+import { command, query } from '$app/server';
+import { db } from '$lib/server/db';
+import { historyTable } from '$lib/server/db/schema';
+import { desc } from 'drizzle-orm';
+import z from 'zod';
+
+const insertHistorySchema = z.object({
+	store: z.string(),
+	header: z.string(),
+	body: z.string(),
+	status: z.string(),
+	created_at: z.string()
+});
+
+export const selectAllHistory = query(async () => {
+	const history = await db.query.historyTable.findMany({
+		orderBy: desc(historyTable.id)
+	});
+	return history;
+});
+
+export const insertHistory = command(insertHistorySchema, async (data) => {
+	const [newHistory] = await db.insert(historyTable).values(data).returning();
+	return newHistory;
+});

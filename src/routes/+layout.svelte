@@ -7,10 +7,25 @@
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { navigation } from '$lib/navigation';
+	import { selectAllHistory } from '$lib/remote/history.remote';
+	import { selectAllNotifications } from '$lib/remote/notifications.remote';
+	import { historyStore } from '$lib/state/history.state.svelte';
+	import { notificationsStore } from '$lib/state/notifications.state.svelte';
 	import { ModeWatcher } from 'mode-watcher';
+	import { onMount } from 'svelte';
 	import './layout.css';
 
 	let { children } = $props();
+
+	onMount(() => {
+		selectAllHistory().then((data) => {
+			historyStore.value = data;
+		});
+
+		selectAllNotifications().then((data) => {
+			notificationsStore.value = data;
+		});
+	});
 </script>
 
 <svelte:head><link rel="icon" href={logo} /></svelte:head>
