@@ -1,10 +1,14 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { historyStore } from '$lib/state/history.state.svelte';
+	import type { History } from '$lib/types/history.type';
 	import { formatDate } from '$lib/utils';
 	import Status from './status.svelte';
 
-	const historyEntries = $derived(historyStore.value);
+	interface Props {
+		historyEntries: History[];
+	}
+
+	let { historyEntries }: Props = $props();
 </script>
 
 <Table.Root>

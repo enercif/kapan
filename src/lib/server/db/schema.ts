@@ -8,6 +8,8 @@ export const storeTable = sqliteTable('stores', {
 });
 
 export const settingsTable = sqliteTable('settings', {
+	id: integer('id').primaryKey(),
+
 	ntfy_topic: text('ntfy_topic'),
 	ntfy_server_url: text('ntfy_server_url'),
 	ntfy_token: text('ntfy_token'),

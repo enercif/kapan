@@ -24,6 +24,7 @@ export class NtfyProvider extends NotificationProvider {
 	}
 
 	async send(payload: NotificationPayload) {
+		console.log('Sending Ntfy notification:', payload);
 		try {
 			const res = await fetch(`${this.config.serverUrl}/${this.config.topic}`, {
 				method: 'POST',

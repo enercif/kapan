@@ -1,9 +1,14 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { notificationsStore } from '$lib/state/notifications.state.svelte';
+	import type { Notification } from '$lib/types/notification.type';
+	import { formatDate } from '$lib/utils';
 	import Status from './status.svelte';
 
-	const notificationEntries = $derived(notificationsStore.value);
+	interface Props {
+		notificationEntries: Notification[];
+	}
+
+	let { notificationEntries }: Props = $props();
 </script>
 
 <Table.Root>
@@ -19,10 +24,10 @@
 	<Table.Body>
 		{#each notificationEntries as notificationEntry}
 			<Table.Row>
-				<Table.Cell class="font-medium">{notificationEntry.title}</Table.Cell>
+				<Table.Cell class="font-medium">{formatDate(notificationEntry.created_at)}</Table.Cell>
+				<Table.Cell>{notificationEntry.title}</Table.Cell>
 				<Table.Cell>{notificationEntry.message}</Table.Cell>
 				<Table.Cell>{notificationEntry.level}</Table.Cell>
-
 				<Table.Cell class="flex justify-end">
 					<Status type={notificationEntry.status}>
 						{notificationEntry.status}

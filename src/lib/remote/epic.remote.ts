@@ -1,6 +1,7 @@
 import { command } from '$app/server';
 import { EPIC_STORE_ID } from '$lib/const/store-ids';
 import { closeCtx, openCtx } from '$lib/server/browser/browser';
+import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
 import { insertHistoryHelper } from '$lib/utils';
 
@@ -84,6 +85,11 @@ export const redeemEpic = command(async (): Promise<History> => {
 			redeemedGames.push(link);
 			console.log('Redeemed:', link);
 		}
+
+		notifications.notify({
+			title: 'Epic Redeem Complete',
+			message: 'Das ist ein Test'
+		});
 
 		return insertHistoryHelper(
 			EPIC_STORE_ID,

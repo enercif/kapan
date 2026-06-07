@@ -1,33 +1,12 @@
 {
-  "version": "7",
+  "version": "0",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1779189681986,
-      "tag": "0000_chemical_slyde",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1780780203389,
-      "tag": "0001_normal_mandrill",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1780784801658,
-      "tag": "0002_keen_puff_adder",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1780785415282,
-      "tag": "0003_supreme_miek",
+      "when": 1780861279878,
+      "tag": "0000_wise_bruce_banner",
       "breakpoints": true
     }
   ]

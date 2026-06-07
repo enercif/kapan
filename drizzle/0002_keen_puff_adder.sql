@@ -1,1 +1,0 @@
-ALTER TABLE `notifications` ADD `provider` text NOT NULL;

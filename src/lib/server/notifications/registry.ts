@@ -4,10 +4,7 @@ import { TelegramProvider } from './providers/telegram';
 import type { NotificationPayload, ProviderConfig } from './types';
 
 export class NotificationRegistry {
-	readonly providers = $state<Map<string, NotificationProvider>>(new Map());
-	readonly providerList = $derived([...this.providers.values()]);
-	readonly count = $derived(this.providers.size);
-	readonly hasProviders = $derived(this.providers.size > 0);
+	readonly providers = <Map<string, NotificationProvider>>new Map();
 
 	register(config: ProviderConfig): this {
 		const provider = this.buildProvider(config);
@@ -29,7 +26,10 @@ export class NotificationRegistry {
 	}
 
 	async notify(payload: NotificationPayload) {
-		if (!this.hasProviders) return [];
+		console.log('Notifying with payload');
+		console.log(this.providers);
+		if (this.providers.size <= 0) return [];
+		console.log('Sending notification to providers:');
 		await Promise.all([...this.providers.values()].map((p) => p.send(payload)));
 	}
 

@@ -9,9 +9,13 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { STORE_NAMES } from '$lib/const/maps';
 	import { AVAILABLE_STORES } from '$lib/const/store-ids';
+	import { selectAllHistory } from '$lib/remote/history.remote';
+	import { selectAllNotifications } from '$lib/remote/notifications.remote';
 	import { insertStore, selectStores } from '$lib/remote/stores.remote';
+	import { historyStore } from '$lib/state/history.state.svelte';
+	import { notificationsStore } from '$lib/state/notifications.state.svelte';
 	import type { StoreID } from '$lib/types/store-id.type';
-	import { StoreIcon } from '@lucide/svelte';
+	import { RefreshCcw, StoreIcon } from '@lucide/svelte';
 
 	let stores = $state(await selectStores());
 
@@ -22,6 +26,14 @@
 
 	const storeIds = $derived(stores.map((s) => s.id));
 	const availableToAdd = $derived(AVAILABLE_STORES.filter((s) => !storeIds.includes(s)));
+
+	let historyEntries = $derived(historyStore.value);
+	let notificationEntries = $derived(notificationsStore.value);
+
+	async function refresh() {
+		historyEntries = await selectAllHistory();
+		notificationEntries = await selectAllNotifications();
+	}
 </script>
 
 <svelte:head>
@@ -60,18 +72,25 @@
 		{/if}
 
 		<Tabs.Root value="history">
-			<Tabs.List>
-				<Tabs.Trigger value="history">History</Tabs.Trigger>
-				<Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
-			</Tabs.List>
+			<div class="flex flex-row items-center justify-between">
+				<Tabs.List>
+					<Tabs.Trigger value="history">History</Tabs.Trigger>
+					<Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
+				</Tabs.List>
+
+				<Button variant="ghost" size="icon" onclick={refresh}>
+					<RefreshCcw />
+				</Button>
+			</div>
+
 			<Tabs.Content value="history">
 				<ScrollArea class="h-120">
-					<HistoryTable />
+					<HistoryTable {historyEntries} />
 				</ScrollArea>
 			</Tabs.Content>
 			<Tabs.Content value="notifications">
 				<ScrollArea class="h-120">
-					<NotificationsTable />
+					<NotificationsTable {notificationEntries} />
 				</ScrollArea>
 			</Tabs.Content>
 		</Tabs.Root>
