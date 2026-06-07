@@ -19,12 +19,12 @@ CREATE TABLE `notifications` (
 --> statement-breakpoint
 CREATE TABLE `settings` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`ntfy_topic` text,
-	`ntfy_server_url` text,
-	`ntfy_token` text,
+	`ntfy_topic` text DEFAULT '' NOT NULL,
+	`ntfy_server_url` text DEFAULT '' NOT NULL,
+	`ntfy_token` text DEFAULT '' NOT NULL,
 	`ntfy_enabled` integer DEFAULT false NOT NULL,
-	`telegram_chat_id` text,
-	`telegram_bot_token` text,
+	`telegram_chat_id` text DEFAULT '' NOT NULL,
+	`telegram_bot_token` text DEFAULT '' NOT NULL,
 	`telegram_enabled` integer DEFAULT false NOT NULL
 );
 --> statement-breakpoint
@@ -34,3 +34,4 @@ CREATE TABLE `stores` (
 	`login` integer DEFAULT false NOT NULL,
 	`active` integer DEFAULT false NOT NULL
 );
+
