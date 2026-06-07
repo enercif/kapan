@@ -2,6 +2,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { historyStore } from '$lib/state/history.state.svelte';
 	import { formatDate } from '$lib/utils';
+	import Status from './status.svelte';
 
 	const historyEntries = $derived(historyStore.value);
 </script>
@@ -23,7 +24,11 @@
 				<Table.Cell>{historyEntry.store}</Table.Cell>
 				<Table.Cell>{historyEntry.header}</Table.Cell>
 				<Table.Cell>{historyEntry.body}</Table.Cell>
-				<Table.Cell class="text-end">{historyEntry.status}</Table.Cell>
+				<Table.Cell class="flex justify-end">
+					<Status type={historyEntry.status}>
+						{historyEntry.status}
+					</Status>
+				</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>

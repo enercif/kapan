@@ -20,6 +20,7 @@
 	import { toast } from 'svelte-sonner';
 	import { backOut } from 'svelte/easing';
 	import { scale } from 'svelte/transition';
+	import Status from './status.svelte';
 
 	interface Props {
 		store: StoreSelect;
@@ -122,7 +123,9 @@
 
 			<div class="z-10 flex w-full flex-col gap-1.5">
 				<Label for="last-status" class="ml-1.5">Last Status</Label>
-				<Input type="text" id="last-status" value={lastUpdate?.status || 'Unknown'} disabled />
+				<Status type={lastUpdate?.status}>
+					{lastUpdate?.status || 'Unknown'}
+				</Status>
 			</div>
 
 			<div class="z-10 col-span-3 flex w-full flex-col gap-1.5">
