@@ -1,6 +1,8 @@
 import { command } from '$app/server';
 import { STEAM_STORE_ID } from '$lib/const/store-ids';
 import { closeCtx, openCtx } from '$lib/server/browser/browser';
+import type { History } from '$lib/types/history.type';
+import { insertHistoryHelper } from '$lib/utils';
 
 const URL_LOGIN = 'https://store.steampowered.com/login/?redir=%3Fl%3Denglish&redir_ssl=1';
 const URL_BASE = 'https://store.steampowered.com/?l=english';
@@ -22,8 +24,10 @@ export const loginSteam = command(async () => {
 	}
 });
 
-export const redeemSteam = command(async () => {
+export const redeemSteam = command(async (): Promise<History> => {
 	const ctx = await openCtx(STEAM_STORE_ID);
+
+	let redeemedGames: string[] = [];
 
 	try {
 		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
@@ -66,9 +70,24 @@ export const redeemSteam = command(async () => {
 			await page.waitForTimeout(2000);
 			await addToAccountAnchor.dispatchEvent('click');
 			await page.waitForTimeout(2000);
+			redeemedGames.push(link);
 		}
+
+		return insertHistoryHelper(
+			STEAM_STORE_ID,
+			'Redeem Complete',
+			redeemedGames.length === 0 ? 'No new games redeemed' : redeemedGames.join('\n'),
+			'success'
+		);
 	} catch (error) {
 		console.error('Error during Steam redeem:', error);
+
+		return insertHistoryHelper(
+			STEAM_STORE_ID,
+			'Redeem Failed',
+			error instanceof Error ? error.message : 'Unknown error',
+			'failure'
+		);
 	} finally {
 		await closeCtx(ctx);
 	}

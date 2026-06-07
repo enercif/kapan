@@ -10,8 +10,11 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { STORE_LOGOS, STORE_NAMES, loginFn, redeemFn } from '$lib/const/maps';
 	import { CRON_REGEX } from '$lib/const/regex';
+	import { selectLastUpdate } from '$lib/remote/history.remote';
 	import { updateStore } from '$lib/remote/stores.remote';
+	import { historyStore } from '$lib/state/history.state.svelte';
 	import type { StoreSelect } from '$lib/types/store.types';
+	import { formatDate } from '$lib/utils';
 	import { CircleCheckIcon, CircleXIcon, InfoIcon } from '@lucide/svelte';
 	import cronstrue from 'cronstrue/i18n';
 	import { toast } from 'svelte-sonner';
@@ -36,6 +39,8 @@
 	const cronValid = $derived(CRON_REGEX.test(cron));
 	const cronChanged = $derived(cron !== savedCron);
 	const cronText = $derived(cronToText(cron));
+
+	let lastUpdate = $state(await selectLastUpdate(STORE_NAMES[(() => store.id)()]));
 
 	function cronToText(expr: string): string {
 		try {
@@ -74,7 +79,9 @@
 
 	async function redeem() {
 		currentRedeem = true;
-		await redeemFn[store.id]();
+		const newEntry = await redeemFn[store.id]();
+		historyStore.value = [newEntry, ...historyStore.value];
+		lastUpdate = { ...newEntry };
 		currentRedeem = false;
 	}
 </script>
@@ -105,12 +112,17 @@
 		{#if store.login}
 			<div class="z-10 col-span-2 flex w-full flex-col gap-1.5">
 				<Label for="last-update" class="ml-1.5">Last Update</Label>
-				<Input type="text" id="last-update" placeholder="Never" disabled />
+				<Input
+					type="text"
+					id="last-update"
+					value={lastUpdate ? formatDate(lastUpdate.created_at) : 'Never'}
+					disabled
+				/>
 			</div>
 
 			<div class="z-10 flex w-full flex-col gap-1.5">
 				<Label for="last-status" class="ml-1.5">Last Status</Label>
-				<Input type="text" id="last-status" placeholder="Unknown" disabled />
+				<Input type="text" id="last-status" value={lastUpdate?.status || 'Unknown'} disabled />
 			</div>
 
 			<div class="z-10 col-span-3 flex w-full flex-col gap-1.5">

@@ -2,6 +2,8 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { historyStore } from '$lib/state/history.state.svelte';
 	import { formatDate } from '$lib/utils';
+
+	const historyEntries = $derived(historyStore.value);
 </script>
 
 <Table.Root>
@@ -15,13 +17,13 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each historyStore.value as historyItem}
+		{#each historyEntries as historyEntry}
 			<Table.Row>
-				<Table.Cell class="font-medium">{formatDate(historyItem.created_at)}</Table.Cell>
-				<Table.Cell>{historyItem.store}</Table.Cell>
-				<Table.Cell>{historyItem.header}</Table.Cell>
-				<Table.Cell>{historyItem.body}</Table.Cell>
-				<Table.Cell class="text-end">{historyItem.status}</Table.Cell>
+				<Table.Cell class="font-medium">{formatDate(historyEntry.created_at)}</Table.Cell>
+				<Table.Cell>{historyEntry.store}</Table.Cell>
+				<Table.Cell>{historyEntry.header}</Table.Cell>
+				<Table.Cell>{historyEntry.body}</Table.Cell>
+				<Table.Cell class="text-end">{historyEntry.status}</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>

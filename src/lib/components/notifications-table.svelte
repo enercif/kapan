@@ -1,6 +1,8 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { notificationsStore } from '$lib/state/notifications.state.svelte';
+
+	const notificationEntries = $derived(notificationsStore.value);
 </script>
 
 <Table.Root>
@@ -14,12 +16,12 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each notificationsStore.value as notification}
+		{#each notificationEntries as notificationEntry}
 			<Table.Row>
-				<Table.Cell class="font-medium">{notification.title}</Table.Cell>
-				<Table.Cell>{notification.message}</Table.Cell>
-				<Table.Cell>{notification.level}</Table.Cell>
-				<Table.Cell class="text-end">{notification.status}</Table.Cell>
+				<Table.Cell class="font-medium">{notificationEntry.title}</Table.Cell>
+				<Table.Cell>{notificationEntry.message}</Table.Cell>
+				<Table.Cell>{notificationEntry.level}</Table.Cell>
+				<Table.Cell class="text-end">{notificationEntry.status}</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>

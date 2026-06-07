@@ -1,9 +1,8 @@
 import { command } from '$app/server';
 import { EPIC_STORE_ID } from '$lib/const/store-ids';
 import { closeCtx, openCtx } from '$lib/server/browser/browser';
-import { historyStore } from '$lib/state/history.state.svelte';
-import type { HistoryInsert } from '$lib/types/history.type';
-import { insertHistory } from './history.remote';
+import type { History } from '$lib/types/history.type';
+import { insertHistoryHelper } from '$lib/utils';
 
 const URL_REDEEM =
 	'https://store.epicgames.com/browse?sortBy=currentPrice&sortDir=ASC&priceTier=tierDiscouted&category=Game&count=40';
@@ -26,7 +25,7 @@ export const loginEpic = command(async () => {
 	}
 });
 
-export const redeemEpic = command(async () => {
+export const redeemEpic = command(async (): Promise<History> => {
 	const ctx = await openCtx(EPIC_STORE_ID);
 
 	let redeemedGames: string[] = [];
@@ -86,38 +85,21 @@ export const redeemEpic = command(async () => {
 			console.log('Redeemed:', link);
 		}
 
-		const history: HistoryInsert = {
-			status: 'success',
-			store: 'Epic Games',
-			header: `Redeem Complete`,
-			body: redeemedGames.join('\n'),
-			created_at: new Date().toISOString()
-		};
-
-		if (redeemedGames.length === 0) {
-			history.body = 'No new games redeemed';
-		}
-
-		persistHistory(history);
+		return insertHistoryHelper(
+			EPIC_STORE_ID,
+			'Redeem Complete',
+			redeemedGames.length === 0 ? 'No new games redeemed' : redeemedGames.join('\n'),
+			'success'
+		);
 	} catch (error) {
-		const history: HistoryInsert = {
-			status: 'failure',
-			store: 'Epic Games',
-			header: `Redeem Failed`,
-			body: 'Here a Reason',
-			created_at: new Date().toISOString()
-		};
-		persistHistory(history);
 		console.error('Error during Epic redeem:', error);
+		return insertHistoryHelper(
+			EPIC_STORE_ID,
+			'Redeem Failed',
+			error instanceof Error ? error.message : 'Unknown error',
+			'failure'
+		);
 	} finally {
 		await closeCtx(ctx);
 	}
 });
-
-async function persistHistory(history: HistoryInsert) {
-	const newHistory = await insertHistory(history);
-	historyStore.value.push(newHistory);
-
-	console.log('History updated, new entry:', newHistory);
-	console.log('Current history store value:', JSON.stringify(historyStore.value));
-}

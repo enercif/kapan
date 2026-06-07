@@ -1,5 +1,10 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { STORE_NAMES } from './const/maps';
+import { insertHistory } from './remote/history.remote';
+import type { History, HistoryInsert } from './types/history.type';
+import type { Status } from './types/status.type';
+import type { StoreID } from './types/store-id.type';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -15,4 +20,20 @@ export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?:
 export function formatDate(dateString: string): string {
 	const date = new Date(dateString);
 	return date.toLocaleString();
+}
+
+export function insertHistoryHelper(
+	storeId: StoreID,
+	header: string,
+	body: string,
+	status: Status
+): Promise<History> {
+	const historyInsert: HistoryInsert = {
+		status: status,
+		store: STORE_NAMES[storeId],
+		header: header,
+		body: body,
+		created_at: new Date().toISOString()
+	};
+	return insertHistory(historyInsert);
 }

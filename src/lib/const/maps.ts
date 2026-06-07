@@ -1,5 +1,6 @@
 import { loginEpic, redeemEpic } from '$lib/remote/epic.remote';
 import { loginSteam, redeemSteam } from '$lib/remote/steam.remote';
+import type { History } from '$lib/types/history.type';
 import type { StoreID } from '$lib/types/store-id.type';
 import type { RemoteCommand } from '@sveltejs/kit';
 
@@ -18,7 +19,7 @@ export const loginFn: Record<StoreID, RemoteCommand<void, boolean>> = {
 	epic: loginEpic
 };
 
-export const redeemFn: Record<StoreID, RemoteCommand<void, void>> = {
+export const redeemFn: Record<StoreID, RemoteCommand<void, History>> = {
 	steam: redeemSteam,
 	epic: redeemEpic
 };

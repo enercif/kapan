@@ -1,7 +1,7 @@
 import { command, query } from '$app/server';
 import { db } from '$lib/server/db';
 import { historyTable } from '$lib/server/db/schema';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import z from 'zod';
 
 const insertHistorySchema = z.object({
@@ -22,4 +22,16 @@ export const selectAllHistory = query(async () => {
 export const insertHistory = command(insertHistorySchema, async (data) => {
 	const [newHistory] = await db.insert(historyTable).values(data).returning();
 	return newHistory;
+});
+
+export const selectLastUpdate = query(z.string(), async (name) => {
+	const lastEntry = await db.query.historyTable.findFirst({
+		columns: {
+			created_at: true,
+			status: true
+		},
+		where: eq(historyTable.store, name),
+		orderBy: desc(historyTable.id)
+	});
+	return lastEntry;
 });

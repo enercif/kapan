@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { STORE_NAMES } from '$lib/const/maps';
 	import { AVAILABLE_STORES } from '$lib/const/store-ids';
@@ -58,16 +59,20 @@
 			</Empty.Root>
 		{/if}
 
-		<Tabs.Root value="history" class="h-60">
+		<Tabs.Root value="history">
 			<Tabs.List>
 				<Tabs.Trigger value="history">History</Tabs.Trigger>
 				<Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="history">
-				<HistoryTable />
+				<ScrollArea class="h-120">
+					<HistoryTable />
+				</ScrollArea>
 			</Tabs.Content>
 			<Tabs.Content value="notifications">
-				<NotificationsTable />
+				<ScrollArea class="h-120">
+					<NotificationsTable />
+				</ScrollArea>
 			</Tabs.Content>
 		</Tabs.Root>
 	</div>
