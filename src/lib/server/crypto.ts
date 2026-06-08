@@ -1,10 +1,10 @@
-import { ENCRYPTION_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 
 function getKey(): Buffer {
-	const keyHex = ENCRYPTION_KEY;
+	const keyHex = env.ENCRYPTION_KEY;
 	if (!keyHex) throw new Error('ENCRYPTION_KEY is not set');
 	const key = Buffer.from(keyHex, 'hex');
 	if (key.length !== 32) throw new Error('ENCRYPTION_KEY must be 64 hex chars (32 bytes)');
