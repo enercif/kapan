@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      patchright:
+        specifier: ^1.60.2
+        version: 1.60.2
+      playwright-ghost:
+        specifier: ^0.18.0
+        version: 0.18.0(patchright@1.60.2)
     devDependencies:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
@@ -59,12 +66,6 @@ importers:
       mode-watcher:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.56.3)
-      patchright:
-        specifier: ^1.60.2
-        version: 1.60.2
-      playwright-ghost:
-        specifier: ^0.18.0
-        version: 0.18.0(patchright@1.60.2)
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
