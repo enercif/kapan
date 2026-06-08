@@ -10,13 +10,13 @@ export const storeTable = sqliteTable('stores', {
 export const settingsTable = sqliteTable('settings', {
 	id: integer('id').primaryKey(),
 
-	ntfy_topic: text('ntfy_topic'),
-	ntfy_server_url: text('ntfy_server_url'),
-	ntfy_token: text('ntfy_token'),
+	ntfy_topic: text('ntfy_topic').default('').notNull(),
+	ntfy_server_url: text('ntfy_server_url').default('').notNull(),
+	ntfy_token: text('ntfy_token').default('').notNull(),
 	ntfy_enabled: integer('ntfy_enabled', { mode: 'boolean' }).default(false).notNull(),
 
-	telegram_chat_id: text('telegram_chat_id'),
-	telegram_bot_token: text('telegram_bot_token'),
+	telegram_chat_id: text('telegram_chat_id').default('').notNull(),
+	telegram_bot_token: text('telegram_bot_token').default('').notNull(),
 	telegram_enabled: integer('telegram_enabled', { mode: 'boolean' }).default(false).notNull()
 });
 

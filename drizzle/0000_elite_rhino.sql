@@ -34,4 +34,3 @@ CREATE TABLE `stores` (
 	`login` integer DEFAULT false NOT NULL,
 	`active` integer DEFAULT false NOT NULL
 );
-

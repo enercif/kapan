@@ -1,0 +1,18 @@
+services:
+  kapan:
+    build:
+      context: .
+      args:
+        - DATABASE_URL=${DATABASE_URL}
+        - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    container_name: kapan
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - ORIGIN=http://localhost:3000
+    volumes:
+      - kapan-data:/app/.data
+
+volumes:
+  kapan-data:

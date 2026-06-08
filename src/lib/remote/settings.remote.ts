@@ -3,6 +3,7 @@ import { ntfySettingsSchema, telegramSettingsSchema } from '$lib/schemas/setting
 import { decrypt, encrypt } from '$lib/server/crypto';
 import { db } from '$lib/server/db';
 import { settingsTable } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const selectSettings = query(async () => {
 	const [settings] = await db.query.settingsTable.findMany();
@@ -18,26 +19,26 @@ export const selectSettings = query(async () => {
 });
 
 export const upsertNtfySettings = command(ntfySettingsSchema, async (data) => {
-	const set = {
-		ntfy_topic: encrypt(data.ntfy_topic),
-		ntfy_server_url: encrypt(data.ntfy_server_url),
-		ntfy_token: encrypt(data.ntfy_token),
+	const update = {
+		ntfy_topic: encrypt(data.ntfy_topic) ?? "",
+		ntfy_server_url: encrypt(data.ntfy_server_url) ?? "",
+		ntfy_token: encrypt(data.ntfy_token) ?? "",
 		ntfy_enabled: data.ntfy_enabled
 	};
 	await db
-		.insert(settingsTable)
-		.values({ id: 1, ...set })
-		.onConflictDoUpdate({ target: settingsTable.id, set });
+		.update(settingsTable)
+		.set(update)
+		.where(eq(settingsTable.id, 1));
 });
 
 export const upsertTelegramSettings = command(telegramSettingsSchema, async (data) => {
-	const set = {
-		telegram_chat_id: encrypt(data.telegram_chat_id),
-		telegram_bot_token: encrypt(data.telegram_bot_token),
+	const update = {
+		telegram_chat_id: encrypt(data.telegram_chat_id) ?? "",
+		telegram_bot_token: encrypt(data.telegram_bot_token) ?? "",
 		telegram_enabled: data.telegram_enabled
 	};
 	await db
-		.insert(settingsTable)
-		.values({ id: 1, ...set })
-		.onConflictDoUpdate({ target: settingsTable.id, set });
+		.update(settingsTable)
+		.set(update)
+		.where(eq(settingsTable.id, 1));
 });
