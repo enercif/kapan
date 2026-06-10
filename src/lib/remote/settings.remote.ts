@@ -3,6 +3,7 @@ import { ntfySettingsSchema, telegramSettingsSchema } from '$lib/schemas/setting
 import { decrypt, encrypt } from '$lib/server/crypto';
 import { db } from '$lib/server/db';
 import { settingsTable } from '$lib/server/db/schema';
+import { notifications } from '$lib/server/notifications/registry';
 import { eq } from 'drizzle-orm';
 
 export const selectSettings = query(async () => {
@@ -20,25 +21,46 @@ export const selectSettings = query(async () => {
 
 export const upsertNtfySettings = command(ntfySettingsSchema, async (data) => {
 	const update = {
-		ntfy_topic: encrypt(data.ntfy_topic) ?? "",
-		ntfy_server_url: encrypt(data.ntfy_server_url) ?? "",
-		ntfy_token: encrypt(data.ntfy_token) ?? "",
+		ntfy_topic: encrypt(data.ntfy_topic) ?? '',
+		ntfy_server_url: encrypt(data.ntfy_server_url) ?? '',
+		ntfy_token: encrypt(data.ntfy_token) ?? '',
 		ntfy_enabled: data.ntfy_enabled
 	};
-	await db
-		.update(settingsTable)
-		.set(update)
-		.where(eq(settingsTable.id, 1));
+
+	if (data.ntfy_enabled && data.ntfy_server_url && data.ntfy_topic) {
+		notifications.register({
+			type: 'ntfy',
+			serverUrl: data.ntfy_server_url,
+			topic: data.ntfy_topic,
+			token: data.ntfy_token
+		});
+		console.log('Ntfy registered');
+	} else {
+		notifications.unregister('ntfy');
+		console.log('Ntfy unregistered');
+	}
+
+	await db.update(settingsTable).set(update).where(eq(settingsTable.id, 1));
 });
 
 export const upsertTelegramSettings = command(telegramSettingsSchema, async (data) => {
 	const update = {
-		telegram_chat_id: encrypt(data.telegram_chat_id) ?? "",
-		telegram_bot_token: encrypt(data.telegram_bot_token) ?? "",
+		telegram_chat_id: encrypt(data.telegram_chat_id) ?? '',
+		telegram_bot_token: encrypt(data.telegram_bot_token) ?? '',
 		telegram_enabled: data.telegram_enabled
 	};
-	await db
-		.update(settingsTable)
-		.set(update)
-		.where(eq(settingsTable.id, 1));
+
+	if (data.telegram_enabled && data.telegram_chat_id && data.telegram_bot_token) {
+		notifications.register({
+			type: 'telegram',
+			chatId: data.telegram_chat_id,
+			botToken: data.telegram_bot_token
+		});
+		console.log('Telegram registered');
+	} else {
+		notifications.unregister('telegram');
+		console.log('Telegram unregistered');
+	}
+
+	await db.update(settingsTable).set(update).where(eq(settingsTable.id, 1));
 });

@@ -23,6 +23,7 @@
 				ntfy_token: settings.ntfy_token,
 				ntfy_enabled: settings.ntfy_enabled
 			});
+
 			toast.success('Ntfy settings saved.');
 		} catch {
 			toast.error('Failed to save Ntfy settings.');
@@ -61,7 +62,11 @@
 		<section class="flex flex-col gap-4 border-l pl-4">
 			<div class="flex flex-row items-center justify-between gap-3">
 				<Label for="ntfy-enabled" class="text-lg font-medium">Ntfy</Label>
-				<Switch id="ntfy-enabled" bind:checked={settings.ntfy_enabled} />
+				<Switch
+					id="ntfy-enabled"
+					bind:checked={settings.ntfy_enabled}
+					disabled={settings.ntfy_server_url.length === 0 || settings.ntfy_topic.length === 0}
+				/>
 			</div>
 
 			<div class="flex flex-col gap-1.5">

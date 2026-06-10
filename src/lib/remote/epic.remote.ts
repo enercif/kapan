@@ -12,7 +12,7 @@ const URL_LOGIN = 'https://www.epicgames.com/id/login?lang=en';
 const URL_ACCOUNT = 'https://accounts.epicgames.com/account/personal';
 
 export const loginEpic = command(async () => {
-	let log: LoginLog = EMPTY_LOGIN_LOG;
+	let log: LoginLog = { ...EMPTY_LOGIN_LOG };
 	const ctx = await openCtx(EPIC_STORE_ID);
 
 	try {
@@ -52,7 +52,7 @@ export const loginEpic = command(async () => {
 });
 
 export const redeemEpic = command(async (): Promise<History> => {
-	let log: RedeemLog = EMPTY_REDEEM_LOG;
+	let log: RedeemLog = { ...EMPTY_REDEEM_LOG };
 	const ctx = await openCtx(EPIC_STORE_ID);
 	let redeemedGames: string[] = [];
 

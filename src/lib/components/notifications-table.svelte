@@ -15,6 +15,7 @@
 	<Table.Header>
 		<Table.Row>
 			<Table.Head class="w-25">Date</Table.Head>
+			<Table.Head>Provider</Table.Head>
 			<Table.Head>Title</Table.Head>
 			<Table.Head>Message</Table.Head>
 			<Table.Head>Level</Table.Head>
@@ -25,6 +26,7 @@
 		{#each notificationEntries as notificationEntry}
 			<Table.Row>
 				<Table.Cell class="font-medium">{formatDate(notificationEntry.created_at)}</Table.Cell>
+				<Table.Cell>{notificationEntry.provider}</Table.Cell>
 				<Table.Cell>{notificationEntry.title}</Table.Cell>
 				<Table.Cell>{notificationEntry.message}</Table.Cell>
 				<Table.Cell>{notificationEntry.level}</Table.Cell>

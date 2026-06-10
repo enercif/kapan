@@ -11,8 +11,7 @@ const URL_BASE = 'https://store.steampowered.com/?l=english';
 const URL_REDEEM = 'https://store.steampowered.com/search/?maxprice=free&specials=1&ndl=1';
 
 export const loginSteam = command(async () => {
-	let log: LoginLog = EMPTY_LOGIN_LOG;
-
+	let log: LoginLog = { ...EMPTY_LOGIN_LOG };
 	const ctx = await openCtx(STEAM_STORE_ID);
 
 	try {
@@ -51,7 +50,7 @@ export const loginSteam = command(async () => {
 });
 
 export const redeemSteam = command(async (): Promise<History> => {
-	let log: RedeemLog = EMPTY_REDEEM_LOG;
+	let log: RedeemLog = { ...EMPTY_REDEEM_LOG };
 	const ctx = await openCtx(STEAM_STORE_ID);
 	let redeemedGames: string[] = [];
 
