@@ -4,14 +4,17 @@ import { closeCtx, openCtx } from '$lib/server/browser/browser';
 import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
-import { EMPTY_LOGIN_LOG, EMPTY_REDEEM_LOG, insertHistoryHelper } from '$lib/utils';
+import { insertHistoryHelper } from '$lib/utils';
 
 const URL_LOGIN = 'https://store.steampowered.com/login/?redir=%3Fl%3Denglish&redir_ssl=1';
 const URL_BASE = 'https://store.steampowered.com/?l=english';
 const URL_REDEEM = 'https://store.steampowered.com/search/?maxprice=free&specials=1&ndl=1';
 
 export const loginSteam = command(async () => {
-	let log: LoginLog = { ...EMPTY_LOGIN_LOG };
+	let log: LoginLog = {
+		type: 'login',
+		error: undefined
+	};
 	const ctx = await openCtx(STEAM_STORE_ID);
 
 	try {
@@ -50,7 +53,12 @@ export const loginSteam = command(async () => {
 });
 
 export const redeemSteam = command(async (): Promise<History> => {
-	let log: RedeemLog = { ...EMPTY_REDEEM_LOG };
+	let log: RedeemLog = {
+		type: 'redeem',
+		foundLinks: [],
+		error: undefined,
+		processedGames: []
+	};
 	const ctx = await openCtx(STEAM_STORE_ID);
 	let redeemedGames: string[] = [];
 

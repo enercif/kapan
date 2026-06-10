@@ -4,7 +4,7 @@ import { closeCtx, openCtx } from '$lib/server/browser/browser';
 import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
-import { EMPTY_LOGIN_LOG, EMPTY_REDEEM_LOG, insertHistoryHelper } from '$lib/utils';
+import { insertHistoryHelper } from '$lib/utils';
 
 const URL_REDEEM =
 	'https://store.epicgames.com/browse?sortBy=currentPrice&sortDir=ASC&priceTier=tierDiscouted&category=Game&count=40';
@@ -12,7 +12,10 @@ const URL_LOGIN = 'https://www.epicgames.com/id/login?lang=en';
 const URL_ACCOUNT = 'https://accounts.epicgames.com/account/personal';
 
 export const loginEpic = command(async () => {
-	let log: LoginLog = { ...EMPTY_LOGIN_LOG };
+	let log: LoginLog = {
+		type: 'login',
+		error: undefined
+	};
 	const ctx = await openCtx(EPIC_STORE_ID);
 
 	try {
@@ -52,7 +55,12 @@ export const loginEpic = command(async () => {
 });
 
 export const redeemEpic = command(async (): Promise<History> => {
-	let log: RedeemLog = { ...EMPTY_REDEEM_LOG };
+	let log: RedeemLog = {
+		type: 'redeem',
+		foundLinks: [],
+		error: undefined,
+		processedGames: []
+	};
 	const ctx = await openCtx(EPIC_STORE_ID);
 	let redeemedGames: string[] = [];
 
