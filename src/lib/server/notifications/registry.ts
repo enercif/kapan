@@ -26,10 +26,7 @@ export class NotificationRegistry {
 	}
 
 	async notify(payload: NotificationPayload) {
-		console.log('Notifying with payload');
-		console.log(this.providers);
 		if (this.providers.size <= 0) return [];
-		console.log('Sending notification to providers:');
 		await Promise.all([...this.providers.values()].map((p) => p.send(payload)));
 	}
 

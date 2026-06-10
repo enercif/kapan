@@ -3,10 +3,14 @@ import { storeInsertSchema, storeUpdateSchema } from '$lib/schemas/store.schema'
 import { db } from '$lib/server/db';
 import { storeTable } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { existsSync } from 'fs';
 
 export const selectStores = query(async () => {
 	const stores = await db.select().from(storeTable);
-	return stores;
+	return stores.map((store) => ({
+		...store,
+		profile: existsSync(`.data/${store.id}`)
+	}));
 });
 
 export const insertStore = command(storeInsertSchema, async (storeInsert) => {

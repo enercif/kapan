@@ -1,0 +1,1 @@
+ALTER TABLE `history` ADD `log` text NOT NULL;

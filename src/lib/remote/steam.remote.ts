@@ -1,32 +1,58 @@
 import { command } from '$app/server';
 import { STEAM_STORE_ID } from '$lib/const/store-ids';
 import { closeCtx, openCtx } from '$lib/server/browser/browser';
+import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
-import { insertHistoryHelper } from '$lib/utils';
+import type { LoginLog, RedeemLog } from '$lib/types/log.type';
+import { EMPTY_LOGIN_LOG, EMPTY_REDEEM_LOG, insertHistoryHelper } from '$lib/utils';
 
 const URL_LOGIN = 'https://store.steampowered.com/login/?redir=%3Fl%3Denglish&redir_ssl=1';
 const URL_BASE = 'https://store.steampowered.com/?l=english';
 const URL_REDEEM = 'https://store.steampowered.com/search/?maxprice=free&specials=1&ndl=1';
 
 export const loginSteam = command(async () => {
+	let log: LoginLog = EMPTY_LOGIN_LOG;
+
 	const ctx = await openCtx(STEAM_STORE_ID);
 
 	try {
 		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_BASE, { timeout: 120_000 });
-		return true;
+		const history = await insertHistoryHelper(
+			STEAM_STORE_ID,
+			'Steam Login',
+			'Login successful',
+			'success',
+			log
+		);
+
+		return {
+			history,
+			success: true
+		};
 	} catch (error) {
-		console.error('Error during Steam login:', error);
-		return false;
+		log.error = error instanceof Error ? error.message : 'Unknown error';
+		const history = await insertHistoryHelper(
+			STEAM_STORE_ID,
+			'Steam Login',
+			'An error occurred during login. Check logs for details',
+			'failure',
+			log
+		);
+
+		return {
+			history,
+			success: false
+		};
 	} finally {
 		await closeCtx(ctx);
 	}
 });
 
 export const redeemSteam = command(async (): Promise<History> => {
+	let log: RedeemLog = EMPTY_REDEEM_LOG;
 	const ctx = await openCtx(STEAM_STORE_ID);
-
 	let redeemedGames: string[] = [];
 
 	try {
@@ -37,9 +63,9 @@ export const redeemSteam = command(async (): Promise<History> => {
 		const links = await page
 			.locator('a:has(div.discount_pct:text("-100%"))')
 			.evaluateAll((anchors) => (anchors as HTMLAnchorElement[]).map((a) => a.href));
+		log.foundLinks = links;
 
 		for (const link of links) {
-			console.log('Processing:', link);
 			await page.goto(link, { waitUntil: 'domcontentloaded' });
 
 			try {
@@ -50,9 +76,10 @@ export const redeemSteam = command(async (): Promise<History> => {
 				const viewPageAnchor = page.locator('a:has(span:text("View Page"))').first();
 				await viewPageAnchor.waitFor({ timeout: 5_000 });
 				await viewPageAnchor.dispatchEvent('click');
-			} catch {
-				console.log('No age verification for:', link);
-			}
+			} catch {}
+
+			const title =
+				(await page.locator('div.apphub_AppName[role="heading"]').textContent()) || 'Unknown Title';
 
 			const addToAccountAnchor = page.locator('a:has(span:text("Add to Account"))').first();
 			const playGameAnchor = page.locator('a:has(span:text("Play Game"))').first();
@@ -63,30 +90,54 @@ export const redeemSteam = command(async (): Promise<History> => {
 			]);
 
 			if (found === 'play-game') {
-				console.log('Already in library, skipping:', link);
+				log.processedGames.push({
+					title,
+					status: 'already_in_library'
+				});
 				continue;
 			}
 
 			await page.waitForTimeout(2000);
 			await addToAccountAnchor.dispatchEvent('click');
 			await page.waitForTimeout(2000);
-			redeemedGames.push(link);
+
+			redeemedGames.push(title);
+			log.processedGames.push({
+				title,
+				status: 'redeemed'
+			});
+		}
+
+		if (redeemedGames.length > 0) {
+			notifications.notify({
+				title: 'Steam Redeem Complete',
+				message: redeemedGames.join('\n'),
+				level: 'info'
+			});
 		}
 
 		return insertHistoryHelper(
 			STEAM_STORE_ID,
 			'Redeem Complete',
 			redeemedGames.length === 0 ? 'No new games redeemed' : redeemedGames.join('\n'),
-			'success'
+			'success',
+			log
 		);
 	} catch (error) {
-		console.error('Error during Steam redeem:', error);
+		log.error = error instanceof Error ? error.message : 'Unknown error';
+
+		notifications.notify({
+			title: 'Steam Redeem Failed',
+			message: 'An error occurred during redeeming. Check logs for details',
+			level: 'error'
+		});
 
 		return insertHistoryHelper(
 			STEAM_STORE_ID,
 			'Redeem Failed',
-			error instanceof Error ? error.message : 'Unknown error',
-			'failure'
+			'An error occurred during redeeming. Check logs for details',
+			'failure',
+			log
 		);
 	} finally {
 		await closeCtx(ctx);

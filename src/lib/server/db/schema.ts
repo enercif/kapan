@@ -36,5 +36,6 @@ export const historyTable = sqliteTable('history', {
 	header: text('header').notNull(),
 	body: text('body').notNull(),
 	status: text('status').notNull(),
+	log: text('log').notNull(),
 	created_at: text('created_at').notNull()
 });

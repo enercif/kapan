@@ -18,6 +18,6 @@ export abstract class NotificationProvider {
 			provider: this.name,
 			created_at: new Date().toISOString()
 		};
-		const notificationHistory = await insertNotification(notificationInsert);
+		await insertNotification(notificationInsert);
 	}
 }

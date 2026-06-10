@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import { STORE_NAMES } from './const/maps';
 import { insertHistory } from './remote/history.remote';
 import type { History, HistoryInsert } from './types/history.type';
+import type { LogEntry, LoginLog, RedeemLog } from './types/log.type';
 import type { Status } from './types/status.type';
 import type { StoreID } from './types/store-id.type';
 
@@ -22,18 +23,36 @@ export function formatDate(dateString: string): string {
 	return date.toLocaleString();
 }
 
-export function insertHistoryHelper(
+export async function insertHistoryHelper(
 	storeId: StoreID,
 	header: string,
 	body: string,
-	status: Status
+	status: Status,
+	log: LogEntry
 ): Promise<History> {
 	const historyInsert: HistoryInsert = {
 		status: status,
 		store: STORE_NAMES[storeId],
 		header: header,
 		body: body,
+		log: JSON.stringify(log),
 		created_at: new Date().toISOString()
 	};
-	return insertHistory(historyInsert);
+	const result = await insertHistory(historyInsert);
+	return {
+		...result,
+		log: log
+	};
 }
+
+export const EMPTY_REDEEM_LOG: RedeemLog = {
+	type: 'redeem',
+	foundLinks: [],
+	error: undefined,
+	processedGames: []
+};
+
+export const EMPTY_LOGIN_LOG: LoginLog = {
+	type: 'login',
+	error: undefined
+};

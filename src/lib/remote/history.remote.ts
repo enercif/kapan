@@ -9,6 +9,7 @@ const insertHistorySchema = z.object({
 	header: z.string(),
 	body: z.string(),
 	status: z.string(),
+	log: z.string(),
 	created_at: z.string()
 });
 
@@ -16,7 +17,10 @@ export const selectAllHistory = query(async () => {
 	const history = await db.query.historyTable.findMany({
 		orderBy: desc(historyTable.id)
 	});
-	return history;
+	return history.map((entry) => ({
+		...entry,
+		log: JSON.parse(entry.log)
+	}));
 });
 
 export const insertHistory = command(insertHistorySchema, async (data) => {

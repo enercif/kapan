@@ -1,3 +1,4 @@
+import type { LogEntry } from './log.type';
 import type { Status } from './status.type';
 
 type HistoryBase = {
@@ -10,8 +11,10 @@ type HistoryBase = {
 export type History = HistoryBase & {
 	id: number;
 	status: string;
+	log: LogEntry;
 };
 
 export type HistoryInsert = HistoryBase & {
 	status: Status;
+	log: string;
 };

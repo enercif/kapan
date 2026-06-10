@@ -3,7 +3,8 @@ import { EPIC_STORE_ID } from '$lib/const/store-ids';
 import { closeCtx, openCtx } from '$lib/server/browser/browser';
 import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
-import { insertHistoryHelper } from '$lib/utils';
+import type { LoginLog, RedeemLog } from '$lib/types/log.type';
+import { EMPTY_LOGIN_LOG, EMPTY_REDEEM_LOG, insertHistoryHelper } from '$lib/utils';
 
 const URL_REDEEM =
 	'https://store.epicgames.com/browse?sortBy=currentPrice&sortDir=ASC&priceTier=tierDiscouted&category=Game&count=40';
@@ -11,24 +12,48 @@ const URL_LOGIN = 'https://www.epicgames.com/id/login?lang=en';
 const URL_ACCOUNT = 'https://accounts.epicgames.com/account/personal';
 
 export const loginEpic = command(async () => {
+	let log: LoginLog = EMPTY_LOGIN_LOG;
 	const ctx = await openCtx(EPIC_STORE_ID);
 
 	try {
 		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_ACCOUNT, { timeout: 120_000 });
-		return true;
+
+		const history = await insertHistoryHelper(
+			EPIC_STORE_ID,
+			'Epic Games Login',
+			'Login successful',
+			'success',
+			log
+		);
+
+		return {
+			history,
+			success: true
+		};
 	} catch (error) {
-		console.error('Error during Epic login:', error);
-		return false;
+		log.error = error instanceof Error ? error.message : 'Unknown error';
+		const history = await insertHistoryHelper(
+			EPIC_STORE_ID,
+			'Epic Games Login',
+			'An error occurred during login. Check logs for details',
+			'failure',
+			log
+		);
+
+		return {
+			history,
+			success: false
+		};
 	} finally {
 		await closeCtx(ctx);
 	}
 });
 
 export const redeemEpic = command(async (): Promise<History> => {
+	let log: RedeemLog = EMPTY_REDEEM_LOG;
 	const ctx = await openCtx(EPIC_STORE_ID);
-
 	let redeemedGames: string[] = [];
 
 	try {
@@ -40,9 +65,13 @@ export const redeemEpic = command(async (): Promise<History> => {
 			.locator('a:has(span:text("-100%"))')
 			.evaluateAll((anchors) => (anchors as HTMLAnchorElement[]).map((a) => a.href));
 
+		log.foundLinks = links;
+
 		for (const link of links) {
-			console.log('Processing:', link);
 			await page.goto(link, { waitUntil: 'domcontentloaded' });
+
+			const title =
+				(await page.locator('[data-testid="pdp-title"]').first().textContent()) || 'Unknown Title';
 
 			const getButton = page.locator('button span span:text("Get")').first();
 			const inLibraryButton = page.locator('button span span:text("In Library")').first();
@@ -53,7 +82,10 @@ export const redeemEpic = command(async (): Promise<History> => {
 			]);
 
 			if (found === 'in-library') {
-				console.log('Already in library, skipping:', link);
+				log.processedGames.push({
+					title,
+					status: 'already_in_library'
+				});
 				continue;
 			}
 			await getButton.click({ delay: 1000 });
@@ -62,9 +94,7 @@ export const redeemEpic = command(async (): Promise<History> => {
 				const continueButton = page.locator('button span span:text("Continue")').first();
 				await continueButton.waitFor({ timeout: 30_000 });
 				await continueButton.click({ delay: 1000 });
-			} catch {
-				console.log('No "Continue" dialog for:', link);
-			}
+			} catch {}
 
 			await page.waitForSelector('#webPurchaseContainer iframe');
 			const iframe = page.frameLocator('#webPurchaseContainer iframe');
@@ -77,33 +107,49 @@ export const redeemEpic = command(async (): Promise<History> => {
 				const acceptButton = iframe.locator('button:has-text("I accept")');
 				await acceptButton.waitFor({ timeout: 30_000 });
 				await acceptButton.click({ delay: 1000 });
-			} catch {
-				console.log('No "Accept Terms" dialog for:', link);
-			}
+			} catch {}
 
-			await page.waitForTimeout(30000);
-			redeemedGames.push(link);
-			console.log('Redeemed:', link);
+			await page.waitForSelector('h3:has(span:text("Download the Epic Games Launcher to play"))', {
+				timeout: 30_000
+			});
+
+			redeemedGames.push(title);
+			log.processedGames.push({
+				title,
+				status: 'redeemed'
+			});
 		}
 
-		notifications.notify({
-			title: 'Epic Redeem Complete',
-			message: 'Das ist ein Test'
-		});
+		if (redeemedGames.length > 0) {
+			notifications.notify({
+				title: 'Epic Redeem Complete',
+				message: redeemedGames.join('\n'),
+				level: 'info'
+			});
+		}
 
 		return insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Redeem Complete',
 			redeemedGames.length === 0 ? 'No new games redeemed' : redeemedGames.join('\n'),
-			'success'
+			'success',
+			log
 		);
 	} catch (error) {
-		console.error('Error during Epic redeem:', error);
+		log.error = error instanceof Error ? error.message : 'Unknown error';
+
+		notifications.notify({
+			title: 'Epic Redeem Failed',
+			message: 'An error occurred during redeeming. Check logs for details',
+			level: 'error'
+		});
+
 		return insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Redeem Failed',
-			error instanceof Error ? error.message : 'Unknown error',
-			'failure'
+			'An error occurred during redeeming. Check logs for details',
+			'failure',
+			log
 		);
 	} finally {
 		await closeCtx(ctx);
