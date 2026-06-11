@@ -14,7 +14,10 @@ export const STORE_LOGOS: Record<StoreID, string> = {
 	epic: 'epic_logo.png'
 };
 
-export const loginFn: Record<StoreID, RemoteCommand<void, boolean>> = {
+export const loginFn: Record<
+	StoreID,
+	RemoteCommand<void, { history: History; success: boolean }>
+> = {
 	steam: loginSteam,
 	epic: loginEpic
 };

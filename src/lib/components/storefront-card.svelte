@@ -64,7 +64,7 @@
 	async function login() {
 		currentLogin = true;
 		const result = await loginFn[store.id]();
-		if (result) {
+		if (result.success) {
 			updateStore({ ...store, login: true }).then((updated) => {
 				store.login = updated.login;
 			});
