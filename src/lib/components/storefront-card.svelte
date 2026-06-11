@@ -53,7 +53,9 @@
 
 	function onActiveChange(newActive: boolean) {
 		active = newActive;
-		updateStore({ ...store, active: newActive });
+		updateStore({ ...store, active: newActive }).then((updated) => {
+			store = { ...store, active: updated.active };
+		});
 		toast(newActive ? 'Store activated' : 'Store deactivated', {
 			description: `Cron updates and redeeming has been ${newActive ? 'enabled' : 'disabled'} for ${storeName}`
 		});
@@ -75,7 +77,9 @@
 
 	function saveCron() {
 		savedCron = cron;
-		updateStore({ ...store, cron });
+		updateStore({ ...store, cron }).then((updated) => {
+			store = { ...store, cron: updated.cron };
+		});
 		toast.success(`Cron updated for ${storeName}`);
 	}
 

@@ -1,5 +1,6 @@
 import { command, query } from '$app/server';
 import { storeInsertSchema, storeUpdateSchema } from '$lib/schemas/store.schema';
+import { stopCron, upsertCron } from '$lib/server/cron';
 import { db } from '$lib/server/db';
 import { storeTable } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -24,5 +25,12 @@ export const updateStore = command(storeUpdateSchema, async (storeUpdate) => {
 		.set(storeUpdate)
 		.where(eq(storeTable.id, storeUpdate.id))
 		.returning();
+
+	if (result.active) {
+		upsertCron(result.id, result.cron);
+	} else {
+		stopCron(result.id);
+	}
+
 	return result;
 });
