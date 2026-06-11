@@ -23,7 +23,7 @@
 	import Status from './status.svelte';
 
 	interface Props {
-		store: StoreSelect & { profile: boolean };
+		store: StoreSelect;
 	}
 
 	let { store }: Props = $props();
@@ -67,7 +67,6 @@
 		if (result) {
 			updateStore({ ...store, login: true }).then((updated) => {
 				store.login = updated.login;
-				store.profile = true;
 			});
 			toast.success(`Logged into ${storeName} successfully`);
 		} else {
@@ -100,13 +99,9 @@
 				<Switch class="cursor-pointer" checked={active} onCheckedChange={onActiveChange} />
 			{/if}
 			{storeName}
-			{#if !store.profile}
-				<Badge variant="destructive" class="z-10 ml-auto">Profile Not Found</Badge>
-			{:else}
-				<Badge variant={store.login ? 'default' : 'destructive'} class="z-10 ml-auto">
-					{store.login ? 'Logged In' : 'Not Logged In'}
-				</Badge>
-			{/if}
+			<Badge variant={store.login ? 'default' : 'destructive'} class="z-10 ml-auto">
+				{store.login ? 'Logged In' : 'Not Logged In'}
+			</Badge>
 		</Card.Title>
 	</Card.Header>
 
@@ -194,7 +189,7 @@
 	</Card.Content>
 
 	<Card.Footer class="flex flex-row gap-2">
-		{#if store.login && store.profile}
+		{#if store.login}
 			<Button class="z-10 grow" disabled={!active || currentRedeem} onclick={redeem}>
 				{#if currentRedeem}
 					<Spinner />

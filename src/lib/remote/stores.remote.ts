@@ -8,10 +8,15 @@ import { existsSync } from 'fs';
 
 export const selectStores = query(async () => {
 	const stores = await db.select().from(storeTable);
-	return stores.map((store) => ({
-		...store,
-		profile: existsSync(`.data/${store.id}`)
-	}));
+	stores.forEach((store) => {
+		if (existsSync(`.data/${store.id}`)) return;
+		store.active = false;
+		store.login = false;
+		db.update(storeTable).set(store).where(eq(storeTable.id, store.id));
+		stopCron(store.id);
+	});
+
+	return stores;
 });
 
 export const insertStore = command(storeInsertSchema, async (storeInsert) => {

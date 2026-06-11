@@ -21,7 +21,7 @@
 
 	async function insertStoreWithId(id: StoreID) {
 		const result = await insertStore({ id });
-		stores.push({ ...result, profile: false });
+		stores.push(result);
 	}
 
 	const storeIds = $derived(stores.map((s) => s.id));
