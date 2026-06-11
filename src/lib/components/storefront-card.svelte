@@ -54,7 +54,7 @@
 	function onActiveChange(newActive: boolean) {
 		active = newActive;
 		updateStore({ ...store, active: newActive }).then((updated) => {
-			store = { ...store, active: updated.active };
+			store.active = updated.active;
 		});
 		toast(newActive ? 'Store activated' : 'Store deactivated', {
 			description: `Cron updates and redeeming has been ${newActive ? 'enabled' : 'disabled'} for ${storeName}`
@@ -65,9 +65,10 @@
 		currentLogin = true;
 		const result = await loginFn[store.id]();
 		if (result) {
-			updateStore({ ...store, login: true });
-			store.login = true;
-			store.profile = true;
+			updateStore({ ...store, login: true }).then((updated) => {
+				store.login = updated.login;
+				store.profile = true;
+			});
 			toast.success(`Logged into ${storeName} successfully`);
 		} else {
 			toast.error(`Failed to log into ${storeName}`);
@@ -78,7 +79,7 @@
 	function saveCron() {
 		savedCron = cron;
 		updateStore({ ...store, cron }).then((updated) => {
-			store = { ...store, cron: updated.cron };
+			store.cron = updated.cron;
 		});
 		toast.success(`Cron updated for ${storeName}`);
 	}
