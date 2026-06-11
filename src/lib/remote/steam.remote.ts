@@ -53,7 +53,7 @@ export const loginSteam = command(async () => {
 	}
 });
 
-export const redeemSteam = command(z.boolean(), async (manuell): Promise<History> => {
+export const redeemSteam = command(z.boolean(), async (manual): Promise<History> => {
 	let log: RedeemLog = {
 		type: 'redeem',
 		foundLinks: [],
@@ -116,7 +116,7 @@ export const redeemSteam = command(z.boolean(), async (manuell): Promise<History
 			});
 		}
 
-		if (redeemedGames.length > 0 && !manuell) {
+		if (redeemedGames.length > 0 && !manual) {
 			notifications.notify({
 				title: 'Steam Redeem Complete',
 				message: redeemedGames.join('\n'),
@@ -134,7 +134,7 @@ export const redeemSteam = command(z.boolean(), async (manuell): Promise<History
 	} catch (error) {
 		log.error = error instanceof Error ? error.message : 'Unknown error';
 
-		if (!manuell) {
+		if (!manual) {
 			notifications.notify({
 				title: 'Steam Redeem Failed',
 				message: 'An error occurred during redeeming. Check logs for details',
