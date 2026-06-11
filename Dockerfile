@@ -1,14 +1,15 @@
 FROM mcr.microsoft.com/playwright:v1.60.0-noble AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN mkdir -p .data
-RUN npm ci
+RUN corepack enable && corepack prepare pnpm@11 --activate
+RUN pnpm install --frozen-lockfile
 COPY . .
 ARG DATABASE_URL
 ARG ENCRYPTION_KEY
-RUN npm run db:migrate
-RUN npm run build
-RUN npm prune --production
+RUN pnpm db:migrate
+RUN pnpm build
+RUN pnpm prune --production
 
 FROM mcr.microsoft.com/playwright:v1.60.0-noble
 WORKDIR /app
