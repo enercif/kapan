@@ -2,9 +2,6 @@ services:
   kapan:
     build:
       context: .
-      args:
-        - DATABASE_URL=${DATABASE_URL}
-        - ENCRYPTION_KEY=${ENCRYPTION_KEY}
     container_name: kapan
     restart: unless-stopped
     ports:
@@ -12,8 +9,6 @@ services:
       - '6080:6080'
     env_file:
       - .env
-    environment:
-      - ORIGIN=http://localhost:3000
     volumes:
       - kapan-data:/app/.data
 

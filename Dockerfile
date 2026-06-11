@@ -5,8 +5,6 @@ RUN mkdir -p .data
 RUN corepack enable && corepack prepare pnpm@11 --activate
 RUN pnpm install --frozen-lockfile
 COPY . .
-ARG DATABASE_URL
-ARG ENCRYPTION_KEY
 RUN pnpm db:migrate
 RUN pnpm build
 RUN pnpm prune --production
