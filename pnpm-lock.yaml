@@ -14,9 +14,6 @@ importers:
       patchright:
         specifier: ^1.60.2
         version: 1.60.2
-      playwright-ghost:
-        specifier: ^0.18.0
-        version: 0.18.0(patchright@1.60.2)
     devDependencies:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
@@ -1049,9 +1046,6 @@ packages:
   '@types/better-sqlite3@7.6.13':
     resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
 
-  '@types/bezier-js@4.1.3':
-    resolution: {integrity: sha512-FNVVCu5mx/rJCWBxLTcL7oOajmGtWtBTDjq6DSUWUI12GeePivrZZXz+UgE0D6VYsLEjvExRO03z4hVtu3pTEQ==}
-
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
@@ -1089,9 +1083,6 @@ packages:
   better-sqlite3@12.10.0:
     resolution: {integrity: sha512-CyzaZRQKyHkB2ZInfTTl2nvT33EbDpjkLEbE8/Zck3Ll6O0qqvuGdrJ45HgtH+HykRg88ITY3AdreBGN70aBSQ==}
     engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
-
-  bezier-js@6.1.4:
-    resolution: {integrity: sha512-PA0FW9ZpcHbojUCMu28z9Vg/fNkwTj5YhusSAjHHDfHDGLxJ6YUKrAN2vk1fP2MMOxVw4Oko16FMlRGVBGqLKg==}
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -1141,15 +1132,6 @@ packages:
   cronstrue@3.14.0:
     resolution: {integrity: sha512-XnW4vuK/jPJjmTyDWiej1Zq36Od7ITwxaV2O1pzHZuyMVvdy7NAvyvIBzybt+idqSpfqYuoDG7uf/ocGtJVWxA==}
     hasBin: true
-
-  debug@4.4.3:
-    resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
 
   decompress-response@6.0.0:
     resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
@@ -1345,9 +1327,6 @@ packages:
   get-tsconfig@4.14.0:
     resolution: {integrity: sha512-yTb+8DXzDREzgvYmh6s9vHsSVCHeC0G3PI5bEXNBHtmshPnO+S5O7qgLEOn0I5QvMy6kpZN8K1NKGyilLb93wA==}
 
-  ghost-cursor@1.4.2:
-    resolution: {integrity: sha512-NPMuH05Ik9h99zrAb4fvAzhB4T6MqKwdPoI+Me0IJWN3676j4UoAsjKN/cJq5AG4zyZwAEPPggZXHVU0P57/5g==}
-
   github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
 
@@ -1502,9 +1481,6 @@ packages:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
     engines: {node: '>=10'}
 
-  ms@2.1.3:
-    resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
-
   nanoid@3.3.12:
     resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -1546,38 +1522,6 @@ packages:
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
-
-  playwright-core@1.58.2:
-    resolution: {integrity: sha512-yZkEtftgwS8CsfYo7nm0KE8jsvm6i/PTgVtB8DL726wNf6H2IMsDuxCpJj59KDaxCtSnrWan2AeDqM7JBaultg==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  playwright-ghost@0.18.0:
-    resolution: {integrity: sha512-FsUbObii2Jy3ntKPnbHXNGFGHMpJkvv3BqV6uQnpZb20D0kLuVp7nn8ODOY9FILXbMYTOXS8SA4qcpATSMJBuw==}
-    engines: {node: '>=22.20.0'}
-    peerDependencies:
-      '@ghostery/adblocker-playwright': '>=2.14.1'
-      '@lightpanda/browser': '>=1.2.0'
-      camoufox-js: '>=0.9.3'
-      fingerprint-generator: '>=2.1.81'
-      fingerprint-injector: '>=2.1.81'
-      patchright: '>=1.58.0'
-      playwright: '>=1.58.0'
-    peerDependenciesMeta:
-      '@ghostery/adblocker-playwright':
-        optional: true
-      '@lightpanda/browser':
-        optional: true
-      camoufox-js:
-        optional: true
-      fingerprint-generator:
-        optional: true
-      fingerprint-injector:
-        optional: true
-      patchright:
-        optional: true
-      playwright:
-        optional: true
 
   postcss@8.5.15:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
@@ -1926,18 +1870,6 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
-
-  ws@8.20.0:
-    resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
 
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
@@ -2540,8 +2472,6 @@ snapshots:
     dependencies:
       '@types/node': 25.9.2
 
-  '@types/bezier-js@4.1.3': {}
-
   '@types/cookie@0.6.0': {}
 
   '@types/estree@1.0.9': {}
@@ -2568,8 +2498,6 @@ snapshots:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
-
-  bezier-js@6.1.4: {}
 
   bindings@1.5.0:
     dependencies:
@@ -2621,10 +2549,6 @@ snapshots:
       luxon: 3.7.2
 
   cronstrue@3.14.0: {}
-
-  debug@4.4.3:
-    dependencies:
-      ms: 2.1.3
 
   decompress-response@6.0.0:
     dependencies:
@@ -2776,14 +2700,6 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  ghost-cursor@1.4.2:
-    dependencies:
-      '@types/bezier-js': 4.1.3
-      bezier-js: 6.1.4
-      debug: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-
   github-from-package@0.0.0: {}
 
   graceful-fs@4.2.11: {}
@@ -2893,8 +2809,6 @@ snapshots:
 
   mrmime@2.0.1: {}
 
-  ms@2.1.3: {}
-
   nanoid@3.3.12: {}
 
   napi-build-utils@2.0.0: {}
@@ -2924,20 +2838,6 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
-
-  playwright-core@1.58.2: {}
-
-  playwright-ghost@0.18.0(patchright@1.60.2):
-    dependencies:
-      ghost-cursor: 1.4.2
-      playwright-core: 1.58.2
-      ws: 8.20.0
-    optionalDependencies:
-      patchright: 1.60.2
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
 
   postcss@8.5.15:
     dependencies:
@@ -3271,8 +3171,6 @@ snapshots:
       vite: 8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.4)
 
   wrappy@1.0.2: {}
-
-  ws@8.20.0: {}
 
   zimmerframe@1.1.4: {}
 

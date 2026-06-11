@@ -1,18 +1,17 @@
+import { PROFILES_DIR } from '$lib/const/profile';
 import type { StoreID } from '$lib/types/store-id.type';
+import { chromium, type BrowserContext } from 'patchright';
 import path from 'path';
-import { chromium, type BrowserContext } from 'playwright-ghost/patchright';
-import plugins from 'playwright-ghost/plugins';
-
-const PROFILES_DIR = process.env.PROFILES_DIR ?? '.data';
 
 export async function openCtx(storeId: StoreID) {
 	const profilePath = path.join(PROFILES_DIR, storeId);
 
-	return chromium.launchPersistentContext(profilePath, {
-		plugins: plugins.recommended(),
+	const ctx = await chromium.launchPersistentContext(profilePath, {
 		headless: false,
-		locale: 'en-US'
+		locale: 'en-US',
+		executablePath: '/usr/bin/chromium'
 	});
+	return ctx;
 }
 
 export async function closeCtx(ctx: BrowserContext): Promise<void> {
