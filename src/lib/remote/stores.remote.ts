@@ -1,10 +1,12 @@
 import { command, query } from '$app/server';
+import { EPIC_STORE_ID, STEAM_STORE_ID } from '$lib/const/store-ids';
 import { storeInsertSchema, storeUpdateSchema } from '$lib/schemas/store.schema';
 import { stopCron, upsertCron } from '$lib/server/cron';
 import { db } from '$lib/server/db';
 import { storeTable } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { existsSync } from 'fs';
+import { existsSync, rmSync } from 'fs';
+import z from 'zod';
 
 export const selectStores = query(async () => {
 	const stores = await db.select().from(storeTable);
@@ -41,4 +43,12 @@ export const updateStore = command(storeUpdateSchema, async (storeUpdate) => {
 	}
 
 	return result;
+});
+
+export const deleteStore = command(z.enum([STEAM_STORE_ID, EPIC_STORE_ID]), async (id) => {
+	await db.delete(storeTable).where(eq(storeTable.id, id));
+	stopCron(id);
+	if (existsSync(`.data/${id}`)) {
+		rmSync(`.data/${id}`, { recursive: true, force: true });
+	}
 });
