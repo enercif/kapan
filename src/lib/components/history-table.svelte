@@ -89,9 +89,18 @@
 		<div class="flex max-h-100 flex-col gap-4 overflow-y-auto py-1 mb-5">
 			{#if selectedHistoryEntry}
 				{#if selectedHistoryEntry.log.type === 'login'}
-					<div class="rounded-md bg-secondary px-3 py-2 text-sm text-muted-foreground">
-						{selectedHistoryEntry.log.error ?? 'No error message provided.'}
-					</div>
+					{#if selectedHistoryEntry.log.error}
+						<div class="flex flex-col gap-1">
+							<p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Error</p>
+							<div class="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+								{selectedHistoryEntry.log.error}
+							</div>
+						</div>
+					{:else}
+						<div class="rounded-md bg-secondary px-3 py-2 text-sm text-muted-foreground">
+							No error message
+						</div>
+					{/if}
 				{:else}
 					<div class="flex flex-col gap-1">
 						<p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">

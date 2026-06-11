@@ -22,7 +22,7 @@ export const loginFn: Record<
 	epic: loginEpic
 };
 
-export const redeemFn: Record<StoreID, RemoteCommand<void, History>> = {
+export const redeemFn: Record<StoreID, RemoteCommand<boolean, History>> = {
 	steam: redeemSteam,
 	epic: redeemEpic
 };

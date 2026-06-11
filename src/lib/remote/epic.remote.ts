@@ -5,6 +5,7 @@ import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
 import { insertHistoryHelper } from '$lib/utils';
+import z from 'zod';
 
 const URL_REDEEM =
 	'https://store.epicgames.com/browse?sortBy=currentPrice&sortDir=ASC&priceTier=tierDiscouted&category=Game&count=40';
@@ -54,7 +55,7 @@ export const loginEpic = command(async () => {
 	}
 });
 
-export const redeemEpic = command(async (): Promise<History> => {
+export const redeemEpic = command(z.boolean(), async (manuell): Promise<History> => {
 	let log: RedeemLog = {
 		type: 'redeem',
 		foundLinks: [],
@@ -128,7 +129,7 @@ export const redeemEpic = command(async (): Promise<History> => {
 			});
 		}
 
-		if (redeemedGames.length > 0) {
+		if (redeemedGames.length > 0 && !manuell) {
 			notifications.notify({
 				title: 'Epic Redeem Complete',
 				message: redeemedGames.join('\n'),
@@ -146,11 +147,13 @@ export const redeemEpic = command(async (): Promise<History> => {
 	} catch (error) {
 		log.error = error instanceof Error ? error.message : 'Unknown error';
 
-		notifications.notify({
-			title: 'Epic Redeem Failed',
-			message: 'An error occurred during redeeming. Check logs for details',
-			level: 'error'
-		});
+		if (!manuell) {
+			notifications.notify({
+				title: 'Epic Redeem Failed',
+				message: 'An error occurred during redeeming. Check logs for details',
+				level: 'error'
+			});
+		}
 
 		return insertHistoryHelper(
 			EPIC_STORE_ID,

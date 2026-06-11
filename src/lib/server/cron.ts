@@ -18,11 +18,11 @@ export function upsertCron(storeId: StoreID, cron: string) {
 	switch (storeId) {
 		case STEAM_STORE_ID:
 			CRON_MAP.delete(STEAM_STORE_ID);
-			task = () => redeemSteam();
+			task = () => redeemSteam(false);
 			break;
 		case EPIC_STORE_ID:
 			CRON_MAP.delete(EPIC_STORE_ID);
-			task = () => redeemEpic();
+			task = () => redeemEpic(false);
 			break;
 	}
 

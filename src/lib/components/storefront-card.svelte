@@ -85,7 +85,7 @@
 
 	async function redeem() {
 		currentRedeem = true;
-		const newEntry = await redeemFn[store.id]();
+		const newEntry = await redeemFn[store.id](true);
 		historyStore.value = [newEntry, ...historyStore.value];
 		lastUpdate = { ...newEntry };
 		currentRedeem = false;

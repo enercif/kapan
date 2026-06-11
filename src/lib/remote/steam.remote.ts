@@ -5,6 +5,7 @@ import { notifications } from '$lib/server/notifications/registry';
 import type { History } from '$lib/types/history.type';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
 import { insertHistoryHelper } from '$lib/utils';
+import z from 'zod';
 
 const URL_LOGIN = 'https://store.steampowered.com/login/?redir=%3Fl%3Denglish&redir_ssl=1';
 const URL_BASE = 'https://store.steampowered.com/?l=english';
@@ -52,7 +53,7 @@ export const loginSteam = command(async () => {
 	}
 });
 
-export const redeemSteam = command(async (): Promise<History> => {
+export const redeemSteam = command(z.boolean(), async (manuell): Promise<History> => {
 	let log: RedeemLog = {
 		type: 'redeem',
 		foundLinks: [],
@@ -115,7 +116,7 @@ export const redeemSteam = command(async (): Promise<History> => {
 			});
 		}
 
-		if (redeemedGames.length > 0) {
+		if (redeemedGames.length > 0 && !manuell) {
 			notifications.notify({
 				title: 'Steam Redeem Complete',
 				message: redeemedGames.join('\n'),
@@ -133,11 +134,13 @@ export const redeemSteam = command(async (): Promise<History> => {
 	} catch (error) {
 		log.error = error instanceof Error ? error.message : 'Unknown error';
 
-		notifications.notify({
-			title: 'Steam Redeem Failed',
-			message: 'An error occurred during redeeming. Check logs for details',
-			level: 'error'
-		});
+		if (!manuell) {
+			notifications.notify({
+				title: 'Steam Redeem Failed',
+				message: 'An error occurred during redeeming. Check logs for details',
+				level: 'error'
+			});
+		}
 
 		return insertHistoryHelper(
 			STEAM_STORE_ID,

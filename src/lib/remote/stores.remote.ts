@@ -10,10 +10,13 @@ export const selectStores = query(async () => {
 	const stores = await db.select().from(storeTable);
 	stores.forEach((store) => {
 		if (existsSync(`.data/${store.id}`)) return;
-		store.active = false;
-		store.login = false;
-		db.update(storeTable).set(store).where(eq(storeTable.id, store.id));
-		stopCron(store.id);
+
+		db.update(storeTable)
+			.set({ login: false, active: false })
+			.where(eq(storeTable.id, store.id))
+			.then(() => {
+				stopCron(store.id);
+			});
 	});
 
 	return stores;
