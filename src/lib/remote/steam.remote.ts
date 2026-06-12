@@ -19,9 +19,8 @@ export const loginSteam = command(async () => {
 	const ctx = await openCtx(STEAM_STORE_ID);
 
 	try {
-		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
-		await page.waitForLoadState('domcontentloaded').catch(() => {});
-		await page.waitForTimeout(1000);
+		const page = await ctx.newPage();
+		await page.waitForTimeout(2000);
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_BASE, { timeout: 240_000 });
 		const history = await insertHistoryHelper(
@@ -66,7 +65,7 @@ export const redeemSteam = command(z.boolean(), async (manual): Promise<History>
 	let redeemedGames: string[] = [];
 
 	try {
-		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
+		const page = await ctx.newPage();
 		await page.goto(URL_REDEEM, { waitUntil: 'domcontentloaded' });
 		await page.waitForSelector('a:has(div.discount_pct:text("-100%"))', { timeout: 15_000 });
 

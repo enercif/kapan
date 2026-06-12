@@ -11,6 +11,7 @@
 	import { selectAllNotifications } from '$lib/remote/notifications.remote';
 	import { historyStore } from '$lib/state/history.state.svelte';
 	import { notificationsStore } from '$lib/state/notifications.state.svelte';
+	import { MonitorIcon } from '@lucide/svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import { onMount } from 'svelte';
 	import './layout.css';
@@ -38,7 +39,13 @@
 			<img src={logo} alt="SvelteKit logo" class="size-10" />
 		</a>
 
-		<ModeToggle />
+		<div class="flex flex-row items-center gap-4">
+			<Button href="http://localhost:6080/vnc.html" target="_blank">
+				<MonitorIcon />
+			</Button>
+
+			<ModeToggle />
+		</div>
 
 		<div class="absolute top-1/2 right-1/2 flex translate-x-1/2 -translate-y-1/2 flex-row gap-4">
 			{#each navigation as navItem}

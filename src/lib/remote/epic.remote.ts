@@ -20,9 +20,8 @@ export const loginEpic = command(async () => {
 	const ctx = await openCtx(EPIC_STORE_ID);
 
 	try {
-		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
-		await page.waitForLoadState('domcontentloaded').catch(() => {});
-		await page.waitForTimeout(1000);
+		const page = await ctx.newPage();
+		await page.waitForTimeout(2000);
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_ACCOUNT, { timeout: 240_000 });
 
@@ -70,7 +69,7 @@ export const redeemEpic = command(z.boolean(), async (manual): Promise<History> 
 	try {
 		let purchaseFrame: any = undefined;
 
-		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
+		const page = await ctx.newPage();
 
 		page.on('framenavigated', (frame) => {
 			if (frame.url().includes('/purchase') && !frame.url().includes('free-checkout')) {
