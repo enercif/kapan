@@ -20,8 +20,10 @@ export const loginSteam = command(async () => {
 
 	try {
 		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
+		await page.waitForLoadState('domcontentloaded').catch(() => {});
+		await page.waitForTimeout(1000);
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
-		await page.waitForURL(URL_BASE, { timeout: 120_000 });
+		await page.waitForURL(URL_BASE, { timeout: 240_000 });
 		const history = await insertHistoryHelper(
 			STEAM_STORE_ID,
 			'Steam Login',

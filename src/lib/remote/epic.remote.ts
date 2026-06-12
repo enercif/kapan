@@ -21,8 +21,10 @@ export const loginEpic = command(async () => {
 
 	try {
 		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
+		await page.waitForLoadState('domcontentloaded').catch(() => {});
+		await page.waitForTimeout(1000);
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
-		await page.waitForURL(URL_ACCOUNT, { timeout: 120_000 });
+		await page.waitForURL(URL_ACCOUNT, { timeout: 240_000 });
 
 		const history = await insertHistoryHelper(
 			EPIC_STORE_ID,
@@ -66,7 +68,16 @@ export const redeemEpic = command(z.boolean(), async (manual): Promise<History> 
 	let redeemedGames: string[] = [];
 
 	try {
+		let purchaseFrame: any = undefined;
+
 		const page = ctx.pages().length ? ctx.pages()[0] : await ctx.newPage();
+
+		page.on('framenavigated', (frame) => {
+			if (frame.url().includes('/purchase') && !frame.url().includes('free-checkout')) {
+				purchaseFrame = frame;
+			}
+		});
+
 		await page.goto(URL_REDEEM, { waitUntil: 'domcontentloaded' });
 		await page.waitForSelector('a:has(span:text("-100%"))', { timeout: 15_000 });
 
@@ -82,43 +93,41 @@ export const redeemEpic = command(z.boolean(), async (manual): Promise<History> 
 			const title =
 				(await page.locator('[data-testid="pdp-title"]').first().textContent()) || 'Unknown Title';
 
-			const getButton = page.locator('button span span:text("Get")').first();
-			const inLibraryButton = page.locator('button span span:text("In Library")').first();
+			const purchaseBtn = page.locator('button[data-testid="purchase-cta-button"]');
+			await purchaseBtn.waitFor({ timeout: 30_000 });
+			const btnText = (await purchaseBtn.innerText()).toLowerCase();
 
-			const found = await Promise.race([
-				getButton.waitFor({ timeout: 30_000 }).then(() => 'get'),
-				inLibraryButton.waitFor({ timeout: 30_000 }).then(() => 'in-library')
-			]);
-
-			if (found === 'in-library') {
+			if (btnText.includes('library')) {
 				log.processedGames.push({
 					title,
 					status: 'already_in_library'
 				});
 				continue;
 			}
-			await getButton.click({ delay: 1000 });
+
+			await purchaseBtn.click({ delay: 11 });
 
 			try {
-				const continueButton = page.locator('button span span:text("Continue")').first();
-				await continueButton.waitFor({ timeout: 30_000 });
-				await continueButton.click({ delay: 1000 });
+				const continueButton = page.locator('button:has-text("Continue")').first();
+				await continueButton.click({ delay: 11, timeout: 10_000 });
 			} catch {}
 
-			await page.waitForSelector('#webPurchaseContainer iframe');
-			const iframe = page.frameLocator('#webPurchaseContainer iframe');
+			await page.waitForLoadState('networkidle');
+			if (purchaseFrame !== undefined) {
+				const libraryButton = purchaseFrame
+					.locator('button:has(span:text("Add to library"))')
+					.first();
+				await libraryButton.waitFor({ timeout: 30_000 });
+				await libraryButton.click({ delay: 11 });
 
-			const libraryButton = iframe.locator('button:has(span:text("Add to library"))').first();
-			await libraryButton.waitFor({ timeout: 30_000 });
-			await libraryButton.click();
+				try {
+					const acceptButton = purchaseFrame.locator('button:has-text("I accept")');
+					await acceptButton.waitFor({ timeout: 30_000 });
+					await acceptButton.click({ delay: 11 });
+				} catch {}
+			}
 
-			try {
-				const acceptButton = iframe.locator('button:has-text("I accept")');
-				await acceptButton.waitFor({ timeout: 30_000 });
-				await acceptButton.click({ delay: 1000 });
-			} catch {}
-
-			await page.waitForSelector('h3:has(span:text("Download the Epic Games Launcher to play"))', {
+			await page.waitForSelector('h3:has-text("Download the Epic Games Launcher to play")', {
 				timeout: 30_000
 			});
 
