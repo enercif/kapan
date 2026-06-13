@@ -2,10 +2,10 @@ import { command } from '$app/server';
 import { EPIC_STORE_ID } from '$lib/const/store-ids';
 import { closeCtx, openCtx } from '$lib/server/browser/browser';
 import { notifications } from '$lib/server/notifications/registry';
-import type { History } from '$lib/types/history.type';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
 import { insertHistoryHelper } from '$lib/utils';
 import z from 'zod';
+import { loginStore, setLoggingStore, setReddeemingStore } from './stores.remote';
 
 const URL_REDEEM =
 	'https://store.epicgames.com/browse?sortBy=currentPrice&sortDir=ASC&priceTier=tierDiscouted&category=Game&count=40';
@@ -13,6 +13,8 @@ const URL_LOGIN = 'https://www.epicgames.com/id/login?lang=en';
 const URL_ACCOUNT = 'https://accounts.epicgames.com/account/personal';
 
 export const loginEpic = command(async () => {
+	setLoggingStore({ id: EPIC_STORE_ID, logging: true });
+
 	let log: LoginLog = {
 		type: 'login',
 		error: undefined
@@ -25,38 +27,25 @@ export const loginEpic = command(async () => {
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_ACCOUNT, { timeout: 240_000 });
 
-		const history = await insertHistoryHelper(
-			EPIC_STORE_ID,
-			'Epic Games Login',
-			'Login successful',
-			'success',
-			log
-		);
-
-		return {
-			history,
-			success: true
-		};
+		insertHistoryHelper(EPIC_STORE_ID, 'Epic Games Login', 'Login successful', 'success', log);
+		loginStore(EPIC_STORE_ID);
 	} catch (error) {
 		log.error = error instanceof Error ? error.message : 'Unknown error';
-		const history = await insertHistoryHelper(
+		insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Epic Games Login',
 			'An error occurred during login. Check logs for details',
 			'failure',
 			log
 		);
-
-		return {
-			history,
-			success: false
-		};
 	} finally {
+		setLoggingStore({ id: EPIC_STORE_ID, logging: false });
 		await closeCtx(ctx);
 	}
 });
 
-export const redeemEpic = command(z.boolean(), async (manual): Promise<History> => {
+export const redeemEpic = command(z.boolean(), async (manual): Promise<boolean> => {
+	setReddeemingStore({ id: EPIC_STORE_ID, redeeming: true });
 	let log: RedeemLog = {
 		type: 'redeem',
 		foundLinks: [],
@@ -145,13 +134,15 @@ export const redeemEpic = command(z.boolean(), async (manual): Promise<History> 
 			});
 		}
 
-		return insertHistoryHelper(
+		insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Redeem Complete',
 			redeemedGames.length === 0 ? 'No new games redeemed' : redeemedGames.join('\n'),
 			'success',
 			log
 		);
+
+		return true;
 	} catch (error) {
 		log.error = error instanceof Error ? error.message : 'Unknown error';
 
@@ -163,14 +154,17 @@ export const redeemEpic = command(z.boolean(), async (manual): Promise<History> 
 			});
 		}
 
-		return insertHistoryHelper(
+		insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Redeem Failed',
 			'An error occurred during redeeming. Check logs for details',
 			'failure',
 			log
 		);
+
+		return false;
 	} finally {
+		setReddeemingStore({ id: EPIC_STORE_ID, redeeming: false });
 		await closeCtx(ctx);
 	}
 });

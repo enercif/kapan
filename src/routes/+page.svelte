@@ -9,31 +9,14 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { STORE_NAMES } from '$lib/const/maps';
 	import { AVAILABLE_STORES } from '$lib/const/store-ids';
-	import { selectAllHistory } from '$lib/remote/history.remote';
-	import { selectAllNotifications } from '$lib/remote/notifications.remote';
 	import { insertStore, selectStores } from '$lib/remote/stores.remote';
-	import { historyStore } from '$lib/state/history.state.svelte';
-	import { notificationsStore } from '$lib/state/notifications.state.svelte';
-	import type { StoreID } from '$lib/types/store-id.type';
-	import { RefreshCcw, StoreIcon } from '@lucide/svelte';
+	import { StoreIcon } from '@lucide/svelte';
 
-	let stores = $state(await selectStores());
+	const stores = $derived(await selectStores());
 
-	async function insertStoreWithId(id: StoreID) {
-		const result = await insertStore({ id });
-		stores.push(result);
-	}
-
-	const storeIds = $derived(stores.map((s) => s.id));
-	const availableToAdd = $derived(AVAILABLE_STORES.filter((s) => !storeIds.includes(s)));
-
-	let historyEntries = $derived(historyStore.value);
-	let notificationEntries = $derived(notificationsStore.value);
-
-	async function refresh() {
-		historyEntries = await selectAllHistory();
-		notificationEntries = await selectAllNotifications();
-	}
+	const availableToAdd = $derived(
+		AVAILABLE_STORES.filter((s) => !stores.some((store) => store.id === s))
+	);
 </script>
 
 <svelte:head>
@@ -72,25 +55,19 @@
 		{/if}
 
 		<Tabs.Root value="history">
-			<div class="flex flex-row items-center justify-between">
-				<Tabs.List>
-					<Tabs.Trigger value="history">History</Tabs.Trigger>
-					<Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
-				</Tabs.List>
-
-				<Button variant="ghost" size="icon" onclick={refresh}>
-					<RefreshCcw />
-				</Button>
-			</div>
+			<Tabs.List>
+				<Tabs.Trigger value="history">History</Tabs.Trigger>
+				<Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
+			</Tabs.List>
 
 			<Tabs.Content value="history">
 				<ScrollArea class="h-120">
-					<HistoryTable {historyEntries} />
+					<HistoryTable />
 				</ScrollArea>
 			</Tabs.Content>
 			<Tabs.Content value="notifications">
 				<ScrollArea class="h-120">
-					<NotificationsTable {notificationEntries} />
+					<NotificationsTable />
 				</ScrollArea>
 			</Tabs.Content>
 		</Tabs.Root>
@@ -107,7 +84,7 @@
 		<DropdownMenu.Content>
 			<DropdownMenu.Group>
 				{#each availableToAdd as storeId}
-					<DropdownMenu.Item onclick={() => insertStoreWithId(storeId)}>
+					<DropdownMenu.Item onclick={() => insertStore({ id: storeId })}>
 						{STORE_NAMES[storeId]}
 					</DropdownMenu.Item>
 				{/each}

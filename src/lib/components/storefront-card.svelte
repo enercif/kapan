@@ -13,8 +13,7 @@
 	import { STORE_LOGOS, STORE_NAMES, loginFn, redeemFn } from '$lib/const/maps';
 	import { CRON_REGEX } from '$lib/const/regex';
 	import { selectLastUpdate } from '$lib/remote/history.remote';
-	import { deleteStore, updateStore } from '$lib/remote/stores.remote';
-	import { historyStore } from '$lib/state/history.state.svelte';
+	import { deleteStore, toggleStore, updateCronStore } from '$lib/remote/stores.remote';
 	import type { StoreSelect } from '$lib/types/store.types';
 	import { formatDate } from '$lib/utils';
 	import { CircleCheckIcon, CircleXIcon, InfoIcon, TrashIcon } from '@lucide/svelte';
@@ -32,15 +31,12 @@
 
 	let active = $derived(store.active);
 	let cron = $derived(store.cron);
-	let savedCron = $derived(store.cron);
-
-	let currentLogin = $state(false);
-	let currentRedeem = $state(false);
+	let initialCron = $derived(store.cron);
 
 	const storeName = $derived(STORE_NAMES[store.id] ?? store.id);
 	const storeLogo = $derived(STORE_LOGOS[store.id]);
 	const cronValid = $derived(CRON_REGEX.test(cron));
-	const cronChanged = $derived(cron !== savedCron);
+	const cronChanged = $derived(cron !== initialCron);
 	const cronText = $derived(cronToText(cron));
 
 	let open = $state(false);
@@ -55,44 +51,23 @@
 		}
 	}
 
-	function onActiveChange(newActive: boolean) {
-		active = newActive;
-		updateStore({ ...store, active: newActive }).then((updated) => {
-			store.active = updated.active;
-		});
-		toast(newActive ? 'Store activated' : 'Store deactivated', {
-			description: `Cron updates and redeeming has been ${newActive ? 'enabled' : 'disabled'} for ${storeName}`
-		});
+	async function onActiveChange(active: boolean) {
+		await toggleStore({ id: store.id, active });
+		toast.success(active ? `${storeName} has been activated` : `${storeName} has been deactivated`);
 	}
 
 	async function login() {
-		currentLogin = true;
-		const result = await loginFn[store.id]();
-		if (result.success) {
-			updateStore({ ...store, login: true }).then((updated) => {
-				store.login = updated.login;
-			});
-			toast.success(`Logged into ${storeName} successfully`);
-		} else {
-			toast.error(`Failed to log into ${storeName}`);
-		}
-		currentLogin = false;
+		await loginFn[store.id]();
 	}
 
 	function saveCron() {
-		savedCron = cron;
-		updateStore({ ...store, cron }).then((updated) => {
-			store.cron = updated.cron;
-		});
+		initialCron = cron;
+		updateCronStore({ id: store.id, cron });
 		toast.success(`Cron updated for ${storeName}`);
 	}
 
 	async function redeem() {
-		currentRedeem = true;
-		const newEntry = await redeemFn[store.id](true);
-		historyStore.value = [newEntry, ...historyStore.value];
-		lastUpdate = { ...newEntry };
-		currentRedeem = false;
+		await redeemFn[store.id](true);
 	}
 
 	function onDelete() {
@@ -203,8 +178,8 @@
 
 			<Card.Footer class="flex flex-row gap-2">
 				{#if store.login}
-					<Button class="z-10 grow" disabled={!active || currentRedeem} onclick={redeem}>
-						{#if currentRedeem}
+					<Button class="z-10 grow" disabled={!active || store.redeeming} onclick={redeem}>
+						{#if store.redeeming}
 							<Spinner />
 							Redeeming...
 						{:else}
@@ -212,8 +187,8 @@
 						{/if}
 					</Button>
 				{:else}
-					<Button class="z-10 grow" onclick={login} disabled={currentLogin}>
-						{#if currentLogin}
+					<Button class="z-10 grow" onclick={login} disabled={store.logging}>
+						{#if store.logging}
 							<Spinner />
 							Logging in...
 						{:else}

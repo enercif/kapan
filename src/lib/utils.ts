@@ -2,8 +2,8 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { STORE_NAMES } from './const/maps';
 import { insertHistory } from './remote/history.remote';
-import type { History, HistoryInsert } from './types/history.type';
-import type { LogEntry, LoginLog, RedeemLog } from './types/log.type';
+import type { HistoryInsert } from './types/history.type';
+import type { LogEntry } from './types/log.type';
 import type { Status } from './types/status.type';
 import type { StoreID } from './types/store-id.type';
 
@@ -29,7 +29,7 @@ export async function insertHistoryHelper(
 	body: string,
 	status: Status,
 	log: LogEntry
-): Promise<History> {
+) {
 	const historyInsert: HistoryInsert = {
 		status: status,
 		store: STORE_NAMES[storeId],
@@ -38,21 +38,5 @@ export async function insertHistoryHelper(
 		log: JSON.stringify(log),
 		created_at: new Date().toISOString()
 	};
-	const result = await insertHistory(historyInsert);
-	return {
-		...result,
-		log: log
-	};
+	await insertHistory(historyInsert);
 }
-
-export const EMPTY_REDEEM_LOG: RedeemLog = {
-	type: 'redeem',
-	foundLinks: [],
-	error: undefined,
-	processedGames: []
-};
-
-export const EMPTY_LOGIN_LOG: LoginLog = {
-	type: 'login',
-	error: undefined
-};

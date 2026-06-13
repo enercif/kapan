@@ -8,7 +8,6 @@ RUN corepack enable && corepack prepare pnpm@11 --activate
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm db:migrate
 RUN pnpm build
 RUN pnpm prune --production
 
@@ -48,11 +47,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip3 install git+https://github.com/feder-cr/invisible_playwright.git --break-system-packages
 RUN python3 -m invisible_playwright fetch
 
+RUN mkdir -p .data
+
 COPY start.sh .
 RUN chmod +x start.sh
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
-COPY --from=builder /app/.data .data/
+COPY --from=builder /app/drizzle drizzle/
 COPY package.json .
 ENV DISPLAY=:99
 EXPOSE 3000 6080

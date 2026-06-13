@@ -4,7 +4,9 @@ export const storeTable = sqliteTable('stores', {
 	id: text('id', { enum: ['steam', 'epic'] }).primaryKey(),
 	cron: text('cron').default('0 9 * * *').notNull(),
 	login: integer('login', { mode: 'boolean' }).default(false).notNull(),
-	active: integer('active', { mode: 'boolean' }).default(false).notNull()
+	active: integer('active', { mode: 'boolean' }).default(false).notNull(),
+	redeeming: integer('redeeming', { mode: 'boolean' }).default(false).notNull(),
+	logging: integer('logging', { mode: 'boolean' }).default(false).notNull()
 });
 
 export const settingsTable = sqliteTable('settings', {

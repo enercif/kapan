@@ -1,7 +1,7 @@
 import { EMPTY_SETTINGS } from '$lib/const/settings';
 import { upsertCron } from '$lib/server/cron';
 import { decrypt } from '$lib/server/crypto';
-import { db } from '$lib/server/db';
+import { db, runMigrations } from '$lib/server/db';
 import { settingsTable } from '$lib/server/db/schema';
 import { notifications } from '$lib/server/notifications/registry';
 import type { ServerInit } from '@sveltejs/kit';
@@ -44,6 +44,7 @@ async function initCrons() {
 }
 
 export const init: ServerInit = async () => {
+	runMigrations();
 	initNotifications();
 	initCrons();
 };

@@ -1,6 +1,7 @@
 import { command, query } from '$app/server';
 import { db } from '$lib/server/db';
 import { notificationsTable } from '$lib/server/db/schema';
+import type { Notification } from '$lib/types/notification.type';
 import { desc } from 'drizzle-orm';
 import z from 'zod';
 
@@ -13,14 +14,26 @@ const insertNotificationSchema = z.object({
 	provider: z.string()
 });
 
-export const selectAllNotifications = query(async () => {
+const listeners = new Set<() => void>();
+let _notifications: Notification[] = [];
+
+export const selectNotifications = query.live(async function* () {
 	const notifications = await db.query.notificationsTable.findMany({
 		orderBy: desc(notificationsTable.id)
 	});
-	return notifications;
+	_notifications = notifications;
+
+	while (true) {
+		yield _notifications;
+		const { promise, resolve } = Promise.withResolvers<void>();
+		listeners.add(resolve);
+		await promise;
+	}
 });
 
 export const insertNotification = command(insertNotificationSchema, async (data) => {
 	const [newNotification] = await db.insert(notificationsTable).values(data).returning();
-	return newNotification;
+	_notifications.unshift(newNotification);
+	for (const resolve of listeners) resolve();
+	listeners.clear();
 });

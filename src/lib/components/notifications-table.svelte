@@ -1,14 +1,8 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
-	import type { Notification } from '$lib/types/notification.type';
+	import { selectNotifications } from '$lib/remote/notifications.remote';
 	import { formatDate } from '$lib/utils';
 	import Status from './status.svelte';
-
-	interface Props {
-		notificationEntries: Notification[];
-	}
-
-	let { notificationEntries }: Props = $props();
 </script>
 
 <Table.Root>
@@ -23,7 +17,7 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each notificationEntries as notificationEntry}
+		{#each await selectNotifications() as notificationEntry}
 			<Table.Row>
 				<Table.Cell class="font-medium">{formatDate(notificationEntry.created_at)}</Table.Cell>
 				<Table.Cell>{notificationEntry.provider}</Table.Cell>

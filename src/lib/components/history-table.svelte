@@ -2,6 +2,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { selectHistory } from '$lib/remote/history.remote';
 	import type { History } from '$lib/types/history.type';
 	import { formatDate } from '$lib/utils';
 	import { FileIcon, LinkIcon } from '@lucide/svelte';
@@ -9,12 +10,6 @@
 	import Status from './status.svelte';
 	import { Button } from './ui/button';
 	import { buttonVariants } from './ui/button/button.svelte';
-
-	interface Props {
-		historyEntries: History[];
-	}
-
-	let { historyEntries }: Props = $props();
 
 	let selectedHistoryEntry: History | null = $state(null);
 	let open = $state(false);
@@ -44,16 +39,16 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each historyEntries as historyEntry}
+		{#each await selectHistory() as row}
 			<Table.Row>
-				<Table.Cell class="font-medium">{formatDate(historyEntry.created_at)}</Table.Cell>
-				<Table.Cell>{historyEntry.store}</Table.Cell>
-				<Table.Cell>{historyEntry.header}</Table.Cell>
-				<Table.Cell>{historyEntry.body}</Table.Cell>
+				<Table.Cell class="font-medium">{formatDate(row.created_at)}</Table.Cell>
+				<Table.Cell>{row.store}</Table.Cell>
+				<Table.Cell>{row.header}</Table.Cell>
+				<Table.Cell>{row.body}</Table.Cell>
 				<Table.Cell>
 					<div class="w-fit">
-						<Status type={historyEntry.status}>
-							{historyEntry.status}
+						<Status type={row.status}>
+							{row.status}
 						</Status>
 					</div>
 				</Table.Cell>
@@ -61,7 +56,7 @@
 					<Tooltip.Root>
 						<Tooltip.Trigger
 							class={buttonVariants({ variant: 'outline', size: 'icon' })}
-							onclick={() => handleRowClick(historyEntry)}
+							onclick={() => handleRowClick(row)}
 						>
 							<FileIcon />
 						</Tooltip.Trigger>
