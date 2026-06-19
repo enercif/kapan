@@ -5,7 +5,7 @@ import { notifications } from '$lib/server/notifications/registry';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
 import { insertHistoryHelper } from '$lib/utils';
 import z from 'zod';
-import { setLoggingStore, setReddeemingStore } from './stores.remote';
+import { loginStore, setLoggingStore, setReddeemingStore } from './stores.remote';
 
 const URL_LOGIN = 'https://store.steampowered.com/login/?redir=%3Fl%3Denglish&redir_ssl=1';
 const URL_BASE = 'https://store.steampowered.com/?l=english';
@@ -24,7 +24,9 @@ export const loginSteam = command(async () => {
 		await page.waitForTimeout(2000);
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_BASE, { timeout: 240_000 });
+
 		insertHistoryHelper(STEAM_STORE_ID, 'Steam Login', 'Login successful', 'success', log);
+		loginStore(STEAM_STORE_ID);
 	} catch (error) {
 		log.error = error instanceof Error ? error.message : 'Unknown error';
 		insertHistoryHelper(
