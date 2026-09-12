@@ -12,6 +12,10 @@ export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'childre
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
 
+export function errorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : 'Unknown error';
+}
+
 export function formatDate(dateString: string): string {
 	const date = new Date(dateString);
 	return date.toLocaleString();

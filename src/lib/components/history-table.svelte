@@ -129,6 +129,12 @@
 										>
 											Redeemed
 										</span>
+									{:else if item.status === 'failed'}
+										<span
+											class="shrink-0 rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive"
+										>
+											Failed
+										</span>
 									{:else}
 										<span
 											class="shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium text-muted-foreground"

@@ -1,5 +1,6 @@
 import { STEAM_STORE_ID } from '$lib/const/store-ids';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
+import { errorMessage } from '$lib/utils';
 import { closeCtx, openCtx } from './browser/browser';
 import { insertHistoryHelper } from './history';
 import { notifications } from './notifications/registry';
@@ -26,7 +27,7 @@ export async function loginSteam() {
 		insertHistoryHelper(STEAM_STORE_ID, 'Steam Login', 'Login successful', 'success', log);
 		loginStore(STEAM_STORE_ID);
 	} catch (error) {
-		log.error = error instanceof Error ? error.message : 'Unknown error';
+		log.error = errorMessage(error);
 		insertHistoryHelper(
 			STEAM_STORE_ID,
 			'Steam Login',
@@ -51,6 +52,7 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 	};
 	const ctx = await openCtx(STEAM_STORE_ID);
 	let redeemedGames: string[] = [];
+	let failedGames: string[] = [];
 
 	try {
 		const page = await ctx.newPage();
@@ -65,71 +67,88 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 		log.foundLinks = links;
 
 		for (const link of links) {
-			await page.goto(link, { waitUntil: 'domcontentloaded' });
+			let title = link;
 
 			try {
-				const ageSelect = page.locator('select#ageYear').first();
-				await ageSelect.waitFor({ timeout: 3_000 });
-				await ageSelect.selectOption('2000');
+				await page.goto(link, { waitUntil: 'domcontentloaded' });
 
-				const viewPageAnchor = page.locator('a:has(span:text("View Page"))').first();
-				await viewPageAnchor.waitFor({ timeout: 5_000 });
-				await viewPageAnchor.dispatchEvent('click');
-			} catch {}
+				try {
+					const ageSelect = page.locator('select#ageYear').first();
+					await ageSelect.waitFor({ timeout: 3_000 });
+					await ageSelect.selectOption('2000');
 
-			const title =
-				(await page.locator('div.apphub_AppName[role="heading"]').textContent()) || 'Unknown Title';
+					const viewPageAnchor = page.locator('a:has(span:text("View Page"))').first();
+					await viewPageAnchor.waitFor({ timeout: 5_000 });
+					await viewPageAnchor.dispatchEvent('click');
+				} catch {}
 
-			const addToAccountAnchor = page.locator('a:has(span:text("Add to Account"))').first();
-			const playGameAnchor = page.locator('a:has(span:text("Play Game"))').first();
+				title =
+					(await page.locator('div.apphub_AppName[role="heading"]').textContent()) ||
+					'Unknown Title';
 
-			const found = await Promise.race([
-				addToAccountAnchor.waitFor({ timeout: 30_000 }).then(() => 'add-to-account'),
-				playGameAnchor.waitFor({ timeout: 30_000 }).then(() => 'play-game')
-			]);
+				const addToAccountAnchor = page.locator('a:has(span:text("Add to Account"))').first();
+				const playGameAnchor = page.locator('a:has(span:text("Play Game"))').first();
 
-			if (found === 'play-game') {
+				const found = await Promise.race([
+					addToAccountAnchor.waitFor({ timeout: 30_000 }).then(() => 'add-to-account'),
+					playGameAnchor.waitFor({ timeout: 30_000 }).then(() => 'play-game')
+				]);
+
+				if (found === 'play-game') {
+					log.processedGames.push({
+						title,
+						status: 'already_in_library'
+					});
+					continue;
+				}
+
+				await page.waitForTimeout(2000);
+				await addToAccountAnchor.dispatchEvent('click');
+				await page.waitForTimeout(2000);
+
+				redeemedGames.push(title);
 				log.processedGames.push({
 					title,
-					status: 'already_in_library'
+					status: 'redeemed'
 				});
-				continue;
+			} catch (error) {
+				failedGames.push(title);
+				log.processedGames.push({
+					title,
+					status: 'failed'
+				});
+				log.error = [log.error, `${title}: ${errorMessage(error)}`].filter(Boolean).join('\n\n');
 			}
-
-			await page.waitForTimeout(2000);
-			await addToAccountAnchor.dispatchEvent('click');
-			await page.waitForTimeout(2000);
-
-			redeemedGames.push(title);
-			log.processedGames.push({
-				title,
-				status: 'redeemed'
-			});
 		}
 
-		if (redeemedGames.length > 0 && !manual) {
+		const bodyLines = [...redeemedGames];
+		if (failedGames.length > 0) bodyLines.push(`Failed: ${failedGames.join(', ')}`);
+		const body = bodyLines.length
+			? bodyLines.join('\n')
+			: links.length === 0
+				? 'No free games found'
+				: 'No new games redeemed';
+		const failed = failedGames.length > 0;
+
+		if (!manual && bodyLines.length > 0) {
 			notifications.notify({
-				title: 'Steam Redeem Complete',
-				message: redeemedGames.join('\n'),
-				level: 'info'
+				title: failed ? 'Steam Redeem Incomplete' : 'Steam Redeem Complete',
+				message: body,
+				level: failed ? 'error' : 'info'
 			});
 		}
 
 		insertHistoryHelper(
 			STEAM_STORE_ID,
-			'Redeem Complete',
-			links.length === 0
-				? 'No free games found'
-				: redeemedGames.length === 0
-					? 'No new games redeemed'
-					: redeemedGames.join('\n'),
-			'success',
+			failed ? 'Redeem Incomplete' : 'Redeem Complete',
+			body,
+			failed ? 'failure' : 'success',
 			log
 		);
 
-		return true;
+		return !failed;
 	} catch (error) {
-		log.error = error instanceof Error ? error.message : 'Unknown error';
+		log.error = errorMessage(error);
 
 		if (!manual) {
 			notifications.notify({

@@ -1,5 +1,6 @@
 import { EPIC_STORE_ID } from '$lib/const/store-ids';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
+import { errorMessage } from '$lib/utils';
 import { closeCtx, openCtx } from './browser/browser';
 import { insertHistoryHelper } from './history';
 import { notifications } from './notifications/registry';
@@ -28,7 +29,7 @@ export async function loginEpic() {
 		insertHistoryHelper(EPIC_STORE_ID, 'Epic Games Login', 'Login successful', 'success', log);
 		loginStore(EPIC_STORE_ID);
 	} catch (error) {
-		log.error = error instanceof Error ? error.message : 'Unknown error';
+		log.error = errorMessage(error);
 		insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Epic Games Login',
@@ -52,17 +53,10 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 	};
 	const ctx = await openCtx(EPIC_STORE_ID);
 	let redeemedGames: string[] = [];
+	let failedGames: string[] = [];
 
 	try {
-		let purchaseFrame: any = undefined;
-
 		const page = await ctx.newPage();
-
-		page.on('framenavigated', (frame) => {
-			if (frame.url().includes('/purchase') && !frame.url().includes('free-checkout')) {
-				purchaseFrame = frame;
-			}
-		});
 
 		await page.goto(URL_REDEEM, { waitUntil: 'domcontentloaded' });
 		await page.waitForSelector('a:has(span:text("-100%"))', { timeout: 15_000 }).catch(() => {});
@@ -74,79 +68,93 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 		log.foundLinks = links;
 
 		for (const link of links) {
-			await page.goto(link, { waitUntil: 'domcontentloaded' });
-
-			const title =
-				(await page.locator('[data-testid="pdp-title"]').first().textContent()) || 'Unknown Title';
-
-			const purchaseBtn = page.locator('button[data-testid="purchase-cta-button"]');
-			await purchaseBtn.waitFor({ timeout: 30_000 });
-			const btnText = (await purchaseBtn.innerText()).toLowerCase();
-
-			if (btnText.includes('library')) {
-				log.processedGames.push({
-					title,
-					status: 'already_in_library'
-				});
-				continue;
-			}
-
-			await purchaseBtn.click({ delay: 11 });
+			let title = link;
 
 			try {
-				const continueButton = page.locator('button:has-text("Continue")').first();
-				await continueButton.click({ delay: 11, timeout: 10_000 });
-			} catch {}
+				await page.goto(link, { waitUntil: 'domcontentloaded' });
 
-			await page.waitForLoadState('networkidle');
-			if (purchaseFrame !== undefined) {
-				const libraryButton = purchaseFrame
-					.locator('button:has(span:text("Add to library"))')
-					.first();
+				title =
+					(await page.locator('[data-testid="pdp-title"]').first().textContent()) ||
+					'Unknown Title';
+
+				const purchaseBtn = page
+					.locator('button[data-testid="purchase-cta-button"]')
+					.filter({ hasText: /\S/ });
+				await purchaseBtn.waitFor({ timeout: 30_000 });
+				const btnText = (await purchaseBtn.innerText()).toLowerCase();
+
+				if (btnText.includes('library')) {
+					log.processedGames.push({
+						title,
+						status: 'already_in_library'
+					});
+					continue;
+				}
+
+				await purchaseBtn.click({ delay: 11 });
+
+				try {
+					const continueButton = page.locator('button:has-text("Continue")').first();
+					await continueButton.click({ delay: 11, timeout: 10_000 });
+				} catch {}
+
+				const iframe = page.frameLocator('#webPurchaseContainer iframe');
+
+				const libraryButton = iframe.locator('button:has(span:text("Add to library"))').first();
 				await libraryButton.waitFor({ timeout: 30_000 });
 				await libraryButton.click({ delay: 11 });
 
 				try {
-					const acceptButton = purchaseFrame.locator('button:has-text("I accept")');
+					const acceptButton = iframe.locator('button:has-text("I accept")').first();
 					await acceptButton.waitFor({ timeout: 30_000 });
 					await acceptButton.click({ delay: 11 });
 				} catch {}
+
+				await page.waitForSelector('text=final step', { timeout: 30_000 });
+
+				redeemedGames.push(title);
+				log.processedGames.push({
+					title,
+					status: 'redeemed'
+				});
+			} catch (error) {
+				failedGames.push(title);
+				log.processedGames.push({
+					title,
+					status: 'failed'
+				});
+				log.error = [log.error, `${title}: ${errorMessage(error)}`].filter(Boolean).join('\n\n');
 			}
-
-			await page.waitForSelector('h3:has-text("Download the Epic Games Launcher to play")', {
-				timeout: 30_000
-			});
-
-			redeemedGames.push(title);
-			log.processedGames.push({
-				title,
-				status: 'redeemed'
-			});
 		}
 
-		if (redeemedGames.length > 0 && !manual) {
+		const bodyLines = [...redeemedGames];
+		if (failedGames.length > 0) bodyLines.push(`Failed: ${failedGames.join(', ')}`);
+		const body = bodyLines.length
+			? bodyLines.join('\n')
+			: links.length === 0
+				? 'No free games found'
+				: 'No new games redeemed';
+		const failed = failedGames.length > 0;
+
+		if (!manual && bodyLines.length > 0) {
 			notifications.notify({
-				title: 'Epic Redeem Complete',
-				message: redeemedGames.join('\n'),
-				level: 'info'
+				title: failed ? 'Epic Redeem Incomplete' : 'Epic Redeem Complete',
+				message: body,
+				level: failed ? 'error' : 'info'
 			});
 		}
 
 		insertHistoryHelper(
 			EPIC_STORE_ID,
-			'Redeem Complete',
-			links.length === 0
-				? 'No free games found'
-				: redeemedGames.length === 0
-					? 'No new games redeemed'
-					: redeemedGames.join('\n'),
-			'success',
+			failed ? 'Redeem Incomplete' : 'Redeem Complete',
+			body,
+			failed ? 'failure' : 'success',
 			log
 		);
 
-		return true;
+		return !failed;
 	} catch (error) {
-		log.error = error instanceof Error ? error.message : 'Unknown error';
+		log.error = errorMessage(error);
 
 		if (!manual) {
 			notifications.notify({

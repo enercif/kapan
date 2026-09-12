@@ -12,7 +12,8 @@ export async function openCtx(storeId: StoreID) {
 
 	if (dev) {
 		ctx = await firefox.launchPersistentContext(profilePath, {
-			headless: false
+			headless: false,
+			locale: 'en-US'
 		});
 	} else {
 		// `fetch` prints the engine path as its last stdout line (the old `path` subcommand is gone)
@@ -24,6 +25,7 @@ export async function openCtx(storeId: StoreID) {
 			.trim();
 		ctx = await firefox.launchPersistentContext(profilePath, {
 			headless: false,
+			locale: 'en-US',
 			executablePath: firefoxPath,
 			env: {
 				DISPLAY: ':99',
