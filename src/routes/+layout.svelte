@@ -7,11 +7,16 @@
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { navigation } from '$lib/navigation';
+	import { selectDashboard } from '$lib/remote/dashboard.remote';
 	import { MonitorIcon } from '@lucide/svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import './layout.css';
 
 	let { children } = $props();
+
+	const stores = $derived(selectDashboard().current?.stores ?? []);
+	const sessionActive = $derived(stores.some((s) => s.logging || s.redeeming));
+	const vncUrl = $derived(`http://${page.url.hostname}:6080/vnc.html`);
 </script>
 
 <svelte:head><link rel="icon" href={logo} /></svelte:head>
@@ -29,7 +34,8 @@
 				<Tooltip.Root>
 					<Tooltip.Trigger>
 						<Button
-							href="http://localhost:6080/vnc.html"
+							href={sessionActive ? vncUrl : undefined}
+							disabled={!sessionActive}
 							target="_blank"
 							variant="outline"
 							size="icon"
@@ -38,7 +44,7 @@
 						</Button>
 					</Tooltip.Trigger>
 					<Tooltip.Content>
-						<p>Open noVNC</p>
+						<p>{sessionActive ? 'Open noVNC' : 'Only available during login or redeem'}</p>
 					</Tooltip.Content>
 				</Tooltip.Root>
 

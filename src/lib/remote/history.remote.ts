@@ -1,8 +1,5 @@
-import { command, query } from '$app/server';
-import { db } from '$lib/server/db';
-import { historyTable } from '$lib/server/db/schema';
-import { historyStream, insertHistory as insert } from '$lib/server/history';
-import { desc, eq } from 'drizzle-orm';
+import { command } from '$app/server';
+import { insertHistory as insert } from '$lib/server/history';
 import z from 'zod';
 
 const insertHistorySchema = z.object({
@@ -14,18 +11,4 @@ const insertHistorySchema = z.object({
 	created_at: z.string()
 });
 
-export const selectHistory = query.live(historyStream);
-
 export const insertHistory = command(insertHistorySchema, insert);
-
-export const selectLastUpdate = query(z.string(), async (name) => {
-	const lastEntry = await db.query.historyTable.findFirst({
-		columns: {
-			created_at: true,
-			status: true
-		},
-		where: eq(historyTable.store, name),
-		orderBy: desc(historyTable.id)
-	});
-	return lastEntry;
-});

@@ -12,7 +12,7 @@ const URL_LOGIN = 'https://www.epicgames.com/id/login?lang=en';
 const URL_ACCOUNT = 'https://accounts.epicgames.com/account/personal';
 
 export async function loginEpic() {
-	setLoggingStore({ id: EPIC_STORE_ID, logging: true });
+	await setLoggingStore({ id: EPIC_STORE_ID, logging: true });
 
 	let log: LoginLog = {
 		type: 'login',
@@ -26,11 +26,17 @@ export async function loginEpic() {
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_ACCOUNT, { timeout: 240_000 });
 
-		insertHistoryHelper(EPIC_STORE_ID, 'Epic Games Login', 'Login successful', 'success', log);
-		loginStore(EPIC_STORE_ID);
+		await insertHistoryHelper(
+			EPIC_STORE_ID,
+			'Epic Games Login',
+			'Login successful',
+			'success',
+			log
+		);
+		await loginStore(EPIC_STORE_ID);
 	} catch (error) {
 		log.error = errorMessage(error);
-		insertHistoryHelper(
+		await insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Epic Games Login',
 			'An error occurred during login. Check logs for details',
@@ -38,13 +44,13 @@ export async function loginEpic() {
 			log
 		);
 	} finally {
-		setLoggingStore({ id: EPIC_STORE_ID, logging: false });
+		await setLoggingStore({ id: EPIC_STORE_ID, logging: false });
 		await closeCtx(ctx);
 	}
 }
 
 export async function redeemEpic(manual: boolean): Promise<boolean> {
-	setReddeemingStore({ id: EPIC_STORE_ID, redeeming: true });
+	await setReddeemingStore({ id: EPIC_STORE_ID, redeeming: true });
 	let log: RedeemLog = {
 		type: 'redeem',
 		foundLinks: [],
@@ -144,7 +150,7 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 			});
 		}
 
-		insertHistoryHelper(
+		await insertHistoryHelper(
 			EPIC_STORE_ID,
 			failed ? 'Redeem Incomplete' : 'Redeem Complete',
 			body,
@@ -164,7 +170,7 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 			});
 		}
 
-		insertHistoryHelper(
+		await insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Redeem Failed',
 			'An error occurred during redeeming. Check logs for details',
@@ -174,7 +180,7 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 
 		return false;
 	} finally {
-		setReddeemingStore({ id: EPIC_STORE_ID, redeeming: false });
+		await setReddeemingStore({ id: EPIC_STORE_ID, redeeming: false });
 		await closeCtx(ctx);
 	}
 }

@@ -12,7 +12,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { STORE_LOGOS, STORE_NAMES, loginFn, redeemFn } from '$lib/const/maps';
 	import { CRON_REGEX } from '$lib/const/regex';
-	import { selectLastUpdate } from '$lib/remote/history.remote';
+	import { selectDashboard } from '$lib/remote/dashboard.remote';
 	import { deleteStore, toggleStore, updateCronStore } from '$lib/remote/stores.remote';
 	import type { StoreSelect } from '$lib/types/store.types';
 	import { formatDate } from '$lib/utils';
@@ -41,7 +41,7 @@
 
 	let open = $state(false);
 
-	let lastUpdate = $state(await selectLastUpdate(STORE_NAMES[(() => store.id)()]));
+	const lastUpdate = $derived((await selectDashboard()).history.find((h) => h.store === storeName));
 
 	function cronToText(expr: string): string {
 		try {

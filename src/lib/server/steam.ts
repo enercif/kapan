@@ -11,7 +11,7 @@ const URL_BASE = 'https://store.steampowered.com/?l=english';
 const URL_REDEEM = 'https://store.steampowered.com/search/?maxprice=free&specials=1&ndl=1';
 
 export async function loginSteam() {
-	setLoggingStore({ id: STEAM_STORE_ID, logging: true });
+	await setLoggingStore({ id: STEAM_STORE_ID, logging: true });
 	let log: LoginLog = {
 		type: 'login',
 		error: undefined
@@ -24,11 +24,11 @@ export async function loginSteam() {
 		await page.goto(URL_LOGIN, { waitUntil: 'domcontentloaded' });
 		await page.waitForURL(URL_BASE, { timeout: 240_000 });
 
-		insertHistoryHelper(STEAM_STORE_ID, 'Steam Login', 'Login successful', 'success', log);
-		loginStore(STEAM_STORE_ID);
+		await insertHistoryHelper(STEAM_STORE_ID, 'Steam Login', 'Login successful', 'success', log);
+		await loginStore(STEAM_STORE_ID);
 	} catch (error) {
 		log.error = errorMessage(error);
-		insertHistoryHelper(
+		await insertHistoryHelper(
 			STEAM_STORE_ID,
 			'Steam Login',
 			'An error occurred during login. Check logs for details',
@@ -36,13 +36,13 @@ export async function loginSteam() {
 			log
 		);
 	} finally {
-		setLoggingStore({ id: STEAM_STORE_ID, logging: false });
+		await setLoggingStore({ id: STEAM_STORE_ID, logging: false });
 		await closeCtx(ctx);
 	}
 }
 
 export async function redeemSteam(manual: boolean): Promise<boolean> {
-	setReddeemingStore({ id: STEAM_STORE_ID, redeeming: true });
+	await setReddeemingStore({ id: STEAM_STORE_ID, redeeming: true });
 
 	let log: RedeemLog = {
 		type: 'redeem',
@@ -138,7 +138,7 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 			});
 		}
 
-		insertHistoryHelper(
+		await insertHistoryHelper(
 			STEAM_STORE_ID,
 			failed ? 'Redeem Incomplete' : 'Redeem Complete',
 			body,
@@ -158,7 +158,7 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 			});
 		}
 
-		insertHistoryHelper(
+		await insertHistoryHelper(
 			STEAM_STORE_ID,
 			'Redeem Failed',
 			'An error occurred during redeeming. Check logs for details',
@@ -168,7 +168,7 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 
 		return false;
 	} finally {
-		setReddeemingStore({ id: STEAM_STORE_ID, redeeming: false });
+		await setReddeemingStore({ id: STEAM_STORE_ID, redeeming: false });
 		await closeCtx(ctx);
 	}
 }
