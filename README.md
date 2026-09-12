@@ -24,9 +24,11 @@
 - Docker
 - Docker Compose
 
-### Running with Docker Compose
+### Running
 
-1. Generate an enctyption Key
+The image is published to `ghcr.io/enercif/kapan` for `linux/amd64` and `linux/arm64` - no clone needed.
+
+1. Generate an encryption key
 
    macOS / Linux
 
@@ -40,22 +42,76 @@
    -join ((1..32) | ForEach-Object { '{0:x2}' -f (Get-Random -Max 256) })
    ```
 
-2. Create a `.env` file:
-
-   ```env
-   ENCRYPTION_KEY=
-   ORIGIN=http://localhost:3000
-   ```
-
-3. Start the container:
+2. Start the container - one command, env and volume included (replace the key):
 
    ```bash
-   docker compose up -d
+   docker run -d --name kapan --restart unless-stopped \
+     -p 3000:3000 -p 6080:6080 \
+     -e ENCRYPTION_KEY=<your-key> \
+     -e ORIGIN=http://localhost:3000 \
+     -e TZ=<your-zimezone> \
+     -v kapan-data:/app/.data \
+     ghcr.io/enercif/kapan:latest
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) and configure your stores.
+3. Open [http://localhost:3000](http://localhost:3000) and configure your stores.
 
-5. Open [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html) and connect to login into the stores.
+4. Open [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html) and connect to login into the stores.
+
+### Running with Docker Compose
+
+Prefer a compose file? Put an `.env` next to a `compose.yaml`:
+
+```env
+ENCRYPTION_KEY=
+ORIGIN=http://localhost:3000
+TZ=
+```
+
+```yaml
+services:
+  kapan:
+    image: ghcr.io/enercif/kapan:latest
+    container_name: kapan
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+      - '6080:6080'
+    env_file:
+      - .env
+    volumes:
+      - kapan-data:/app/.data
+
+volumes:
+  kapan-data:
+```
+
+Then pull and start it:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Open [http://localhost:3000](http://localhost:3000) and [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html) as above.
+
+Available tags: `latest`, `main`, version tags such as `1.2.3` / `1.2`, and `sha-<commit>`.
+
+### Updating
+
+Docker run - pull the new image and recreate the container (the `kapan-data` volume keeps your data):
+
+```bash
+docker pull ghcr.io/enercif/kapan:latest
+docker rm -f kapan
+```
+
+Then run the `docker run` command from above again.
+
+Docker Compose:
+
+```bash
+docker compose pull && docker compose up -d
+```
 
 ### Development
 
