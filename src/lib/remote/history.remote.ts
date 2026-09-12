@@ -1,7 +1,7 @@
 import { command, query } from '$app/server';
 import { db } from '$lib/server/db';
 import { historyTable } from '$lib/server/db/schema';
-import type { History } from '$lib/types/history.type';
+import { historyStream, insertHistory as insert } from '$lib/server/history';
 import { desc, eq } from 'drizzle-orm';
 import z from 'zod';
 
@@ -9,41 +9,14 @@ const insertHistorySchema = z.object({
 	store: z.string(),
 	header: z.string(),
 	body: z.string(),
-	status: z.string(),
+	status: z.enum(['success', 'failure']),
 	log: z.string(),
 	created_at: z.string()
 });
 
-const listeners = new Set<() => void>();
-let _history: History[] = [];
+export const selectHistory = query.live(historyStream);
 
-export const selectHistory = query.live(async function* () {
-	const history = await db.query.historyTable.findMany({
-		orderBy: desc(historyTable.id)
-	});
-
-	_history = history.map((entry) => ({
-		...entry,
-		log: JSON.parse(entry.log)
-	}));
-
-	while (true) {
-		yield _history;
-		const { promise, resolve } = Promise.withResolvers<void>();
-		listeners.add(resolve);
-		await promise;
-	}
-});
-
-export const insertHistory = command(insertHistorySchema, async (data) => {
-	const [newHistory] = await db.insert(historyTable).values(data).returning();
-	_history.unshift({
-		...newHistory,
-		log: JSON.parse(newHistory.log)
-	});
-	for (const resolve of listeners) resolve();
-	listeners.clear();
-});
+export const insertHistory = command(insertHistorySchema, insert);
 
 export const selectLastUpdate = query(z.string(), async (name) => {
 	const lastEntry = await db.query.historyTable.findFirst({

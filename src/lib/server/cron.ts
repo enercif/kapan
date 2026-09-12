@@ -1,6 +1,6 @@
 import { EPIC_STORE_ID, STEAM_STORE_ID } from '$lib/const/store-ids';
-import { redeemEpic } from '$lib/remote/epic.remote';
-import { redeemSteam } from '$lib/remote/steam.remote';
+import { redeemEpic } from './epic';
+import { redeemSteam } from './steam';
 import type { StoreID } from '$lib/types/store-id.type';
 import { CronJob } from 'cron';
 

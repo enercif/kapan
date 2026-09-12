@@ -69,7 +69,7 @@ pnpm dev
 The following features are planned before the `v1.0` release:
 
 - [ ] **Better Login Flow**: replace the current noVNC setup with an in-app dialog that streams the browser session, enabling interactive login without exposing a VNC port
-- [ ] **More stores**: expand beyond Steam and Epic Games (e.g. GOG, Prime Gaming, Humble Bundle)
+- [ ] **More stores**: expand beyond Steam and Epic Games (e.g. GOG, Prime Gaming)
 - [ ] **More notification providers**: add support for additional push notification services beyond ntfy and Telegram
 - [ ] **Multiple profiles per store**: manage and redeem games across several accounts for the same store
 - [ ] **Automatic login**: store encrypted credentials in the database and log in automatically without any manual interaction

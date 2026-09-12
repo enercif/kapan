@@ -15,7 +15,13 @@ export async function openCtx(storeId: StoreID) {
 			headless: false
 		});
 	} else {
-		const firefoxPath = execSync('python3 -m invisible_playwright path').toString().trim();
+		// `fetch` prints the engine path as its last stdout line (the old `path` subcommand is gone)
+		const firefoxPath = execSync('python3 -m invisible_playwright fetch')
+			.toString()
+			.trim()
+			.split('\n')
+			.pop()!
+			.trim();
 		ctx = await firefox.launchPersistentContext(profilePath, {
 			headless: false,
 			executablePath: firefoxPath,

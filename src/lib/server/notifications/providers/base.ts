@@ -1,4 +1,4 @@
-import { insertNotification } from '$lib/remote/notifications.remote';
+import { insertNotification } from '../log';
 import type { NotificationInsert } from '$lib/types/notification.type';
 import type { Status } from '$lib/types/status.type';
 import type { NotificationPayload } from '../types';
