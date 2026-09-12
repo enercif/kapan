@@ -56,7 +56,8 @@ The image is published to `ghcr.io/enercif/kapan` for `linux/amd64` and `linux/a
 
 3. Open [http://localhost:3000](http://localhost:3000) and configure your stores.
 
-4. Open [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html) and connect to login into the stores.
+4. Hit **Login** on a store card, then open the noVNC button in the header to complete the login.
+   The X server and VNC only run while a login or redeem is in progress - port 6080 is closed the rest of the time.
 
 ### Running with Docker Compose
 
@@ -92,7 +93,7 @@ Then pull and start it:
 docker compose pull && docker compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html) as above.
+Open [http://localhost:3000](http://localhost:3000) and log in to your stores as above.
 
 Available tags: `latest`, `main`, version tags such as `1.2.3` / `1.2`, and `sha-<commit>`.
 

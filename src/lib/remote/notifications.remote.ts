@@ -1,5 +1,5 @@
-import { command, query } from '$app/server';
-import { insertNotification as insert, notificationsStream } from '$lib/server/notifications/log';
+import { command } from '$app/server';
+import { insertNotification as insert } from '$lib/server/notifications/log';
 import z from 'zod';
 
 const insertNotificationSchema = z.object({
@@ -10,7 +10,5 @@ const insertNotificationSchema = z.object({
 	created_at: z.string(),
 	provider: z.string()
 });
-
-export const selectNotifications = query.live(notificationsStream);
 
 export const insertNotification = command(insertNotificationSchema, insert);

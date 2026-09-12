@@ -9,10 +9,11 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { STORE_NAMES } from '$lib/const/maps';
 	import { AVAILABLE_STORES } from '$lib/const/store-ids';
-	import { insertStore, selectStores } from '$lib/remote/stores.remote';
+	import { selectDashboard } from '$lib/remote/dashboard.remote';
+	import { insertStore } from '$lib/remote/stores.remote';
 	import { StoreIcon } from '@lucide/svelte';
 
-	const stores = $derived(await selectStores());
+	const { stores } = $derived(await selectDashboard());
 
 	const availableToAdd = $derived(
 		AVAILABLE_STORES.filter((s) => !stores.some((store) => store.id === s))

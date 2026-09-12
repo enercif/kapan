@@ -2,7 +2,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { selectHistory } from '$lib/remote/history.remote';
+	import { selectDashboard } from '$lib/remote/dashboard.remote';
 	import type { History } from '$lib/types/history.type';
 	import { formatDate } from '$lib/utils';
 	import { FileIcon, LinkIcon } from '@lucide/svelte';
@@ -39,7 +39,7 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each await selectHistory() as row}
+		{#each (await selectDashboard()).history as row}
 			<Table.Row>
 				<Table.Cell class="font-medium">{formatDate(row.created_at)}</Table.Cell>
 				<Table.Cell>{row.store}</Table.Cell>

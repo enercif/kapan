@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { selectNotifications } from '$lib/remote/notifications.remote';
+	import { selectDashboard } from '$lib/remote/dashboard.remote';
 	import { formatDate } from '$lib/utils';
 	import Status from './status.svelte';
 </script>
@@ -17,7 +17,7 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each await selectNotifications() as notificationEntry}
+		{#each (await selectDashboard()).notifications as notificationEntry}
 			<Table.Row>
 				<Table.Cell class="font-medium">{formatDate(notificationEntry.created_at)}</Table.Cell>
 				<Table.Cell>{notificationEntry.provider}</Table.Cell>
