@@ -1,12 +1,10 @@
-import { command, query } from '$app/server';
+import { command } from '$app/server';
 import { EPIC_STORE_ID, STEAM_STORE_ID } from '$lib/const/store-ids';
 import { storeInsertSchema } from '$lib/schemas/store.schema';
 import * as stores from '$lib/server/stores';
 import z from 'zod';
 
 const storeId = z.enum([STEAM_STORE_ID, EPIC_STORE_ID]);
-
-export const selectStores = query.live(stores.storesStream);
 
 export const insertStore = command(storeInsertSchema, stores.insertStore);
 

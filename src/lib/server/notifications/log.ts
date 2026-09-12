@@ -1,27 +1,13 @@
-import type { Notification, NotificationInsert } from '$lib/types/notification.type';
+import type { NotificationInsert } from '$lib/types/notification.type';
 import { desc } from 'drizzle-orm';
 import { db } from '../db';
 import { notificationsTable } from '../db/schema';
+import { notifyLive } from '../live';
 
-const listeners = new Set<() => void>();
-let _notifications: Notification[] = [];
-
-export async function* notificationsStream() {
-	_notifications = await db.query.notificationsTable.findMany({
-		orderBy: desc(notificationsTable.id)
-	});
-
-	while (true) {
-		yield _notifications;
-		const { promise, resolve } = Promise.withResolvers<void>();
-		listeners.add(resolve);
-		await promise;
-	}
-}
+export const readNotifications = () =>
+	db.query.notificationsTable.findMany({ orderBy: desc(notificationsTable.id) });
 
 export async function insertNotification(data: NotificationInsert) {
-	const [newNotification] = await db.insert(notificationsTable).values(data).returning();
-	_notifications.unshift(newNotification);
-	for (const resolve of listeners) resolve();
-	listeners.clear();
+	await db.insert(notificationsTable).values(data);
+	notifyLive();
 }

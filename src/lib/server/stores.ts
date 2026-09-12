@@ -1,40 +1,22 @@
 import type { StoreID } from '$lib/types/store-id.type';
-import type { StoreInsert, StoreSelect } from '$lib/types/store.types';
+import type { StoreInsert } from '$lib/types/store.types';
 import { eq } from 'drizzle-orm';
 import { existsSync, rmSync } from 'fs';
 import { stopCron, upsertCron } from './cron';
 import { db } from './db';
 import { storeTable } from './db/schema';
+import { notifyLive } from './live';
 
-const listeners = new Set<() => void>();
-let _stores: StoreSelect[] = [];
-
-function notifyListeners() {
-	for (const resolve of listeners) resolve();
-	listeners.clear();
-}
-
-export async function* storesStream() {
-	_stores = await db.select().from(storeTable);
-
-	while (true) {
-		yield _stores;
-		const { promise, resolve } = Promise.withResolvers<void>();
-		listeners.add(resolve);
-		await promise;
-	}
-}
+export const readStores = () => db.select().from(storeTable);
 
 export async function insertStore(storeInsert: StoreInsert) {
-	const [result] = await db.insert(storeTable).values(storeInsert).returning();
-	_stores.push(result);
-	notifyListeners();
+	await db.insert(storeTable).values(storeInsert);
+	notifyLive();
 }
 
 export async function loginStore(id: StoreID) {
 	await db.update(storeTable).set({ login: true }).where(eq(storeTable.id, id));
-	_stores = _stores.map((s) => (s.id === id ? { ...s, login: true } : s));
-	notifyListeners();
+	notifyLive();
 }
 
 export async function updateCronStore({ id, cron }: { id: StoreID; cron: string }) {
@@ -46,8 +28,7 @@ export async function updateCronStore({ id, cron }: { id: StoreID; cron: string 
 	if (store.active) {
 		upsertCron(store.id, cron);
 	}
-	_stores = _stores.map((s) => (s.id === id ? { ...s, cron } : s));
-	notifyListeners();
+	notifyLive();
 }
 
 export async function toggleStore({ id, active }: { id: StoreID; active: boolean }) {
@@ -63,20 +44,17 @@ export async function toggleStore({ id, active }: { id: StoreID; active: boolean
 		stopCron(store.id);
 	}
 
-	_stores = _stores.map((s) => (s.id === id ? { ...s, active } : s));
-	notifyListeners();
+	notifyLive();
 }
 
 export async function setLoggingStore({ id, logging }: { id: StoreID; logging: boolean }) {
 	await db.update(storeTable).set({ logging }).where(eq(storeTable.id, id));
-	_stores = _stores.map((store) => (store.id === id ? { ...store, logging } : store));
-	notifyListeners();
+	notifyLive();
 }
 
 export async function setReddeemingStore({ id, redeeming }: { id: StoreID; redeeming: boolean }) {
 	await db.update(storeTable).set({ redeeming }).where(eq(storeTable.id, id));
-	_stores = _stores.map((store) => (store.id === id ? { ...store, redeeming } : store));
-	notifyListeners();
+	notifyLive();
 }
 
 export async function deleteStore(id: StoreID) {
@@ -85,6 +63,5 @@ export async function deleteStore(id: StoreID) {
 	if (existsSync(`.data/${id}`)) {
 		rmSync(`.data/${id}`, { recursive: true, force: true });
 	}
-	_stores = _stores.filter((s) => s.id !== id);
-	notifyListeners();
+	notifyLive();
 }

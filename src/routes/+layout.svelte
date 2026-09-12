@@ -7,14 +7,14 @@
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { navigation } from '$lib/navigation';
-	import { selectStores } from '$lib/remote/stores.remote';
+	import { selectDashboard } from '$lib/remote/dashboard.remote';
 	import { MonitorIcon } from '@lucide/svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import './layout.css';
 
 	let { children } = $props();
 
-	const stores = $derived(selectStores().current ?? []);
+	const stores = $derived(selectDashboard().current?.stores ?? []);
 	const sessionActive = $derived(stores.some((s) => s.logging || s.redeeming));
 	const vncUrl = $derived(`http://${page.url.hostname}:6080/vnc.html`);
 </script>
