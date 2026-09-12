@@ -1,0 +1,27 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1780952941755,
+      "tag": "0000_elite_rhino",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781124424267,
+      "tag": "0001_material_susan_delgado",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781389366613,
+      "tag": "0002_powerful_union_jack",
+      "breakpoints": true
+    }
+  ]
+}

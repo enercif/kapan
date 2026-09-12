@@ -1,0 +1,16 @@
+services:
+  kapan:
+    build:
+      context: .
+    container_name: kapan
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+      - '6080:6080'
+    env_file:
+      - .env
+    volumes:
+      - kapan-data:/app/.data
+
+volumes:
+  kapan-data:
