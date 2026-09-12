@@ -38,7 +38,11 @@ export async function loginStore(id: StoreID) {
 }
 
 export async function updateCronStore({ id, cron }: { id: StoreID; cron: string }) {
-	const [store] = await db.update(storeTable).set({ cron }).where(eq(storeTable.id, id)).returning();
+	const [store] = await db
+		.update(storeTable)
+		.set({ cron })
+		.where(eq(storeTable.id, id))
+		.returning();
 	if (store.active) {
 		upsertCron(store.id, cron);
 	}
