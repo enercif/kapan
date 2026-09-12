@@ -1,8 +1,8 @@
 import { EPIC_STORE_ID } from '$lib/const/store-ids';
-import { closeCtx, openCtx } from './browser/browser';
-import { notifications } from './notifications/registry';
 import type { LoginLog, RedeemLog } from '$lib/types/log.type';
+import { closeCtx, openCtx } from './browser/browser';
 import { insertHistoryHelper } from './history';
+import { notifications } from './notifications/registry';
 import { loginStore, setLoggingStore, setReddeemingStore } from './stores';
 
 const URL_REDEEM =
@@ -65,7 +65,7 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 		});
 
 		await page.goto(URL_REDEEM, { waitUntil: 'domcontentloaded' });
-		await page.waitForSelector('a:has(span:text("-100%"))', { timeout: 15_000 });
+		await page.waitForSelector('a:has(span:text("-100%"))', { timeout: 15_000 }).catch(() => {});
 
 		const links = await page
 			.locator('a:has(span:text("-100%"))')
@@ -135,7 +135,11 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 		insertHistoryHelper(
 			EPIC_STORE_ID,
 			'Redeem Complete',
-			redeemedGames.length === 0 ? 'No new games redeemed' : redeemedGames.join('\n'),
+			links.length === 0
+				? 'No free games found'
+				: redeemedGames.length === 0
+					? 'No new games redeemed'
+					: redeemedGames.join('\n'),
 			'success',
 			log
 		);
