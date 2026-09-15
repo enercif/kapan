@@ -4,7 +4,7 @@ export type RedeemLog = {
 	error: string | undefined;
 	processedGames: {
 		title: string;
-		status: 'redeemed' | 'already_in_library' | 'failed';
+		status: 'redeemed' | 'already_in_library' | 'free_to_play' | 'failed';
 	}[];
 };
 

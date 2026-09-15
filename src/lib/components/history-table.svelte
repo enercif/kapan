@@ -135,6 +135,12 @@
 										>
 											Failed
 										</span>
+									{:else if item.status === 'free_to_play'}
+										<span
+											class="shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium text-muted-foreground"
+										>
+											Free to Play
+										</span>
 									{:else}
 										<span
 											class="shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium text-muted-foreground"

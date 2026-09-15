@@ -56,6 +56,21 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 
 	try {
 		const page = await ctx.newPage();
+
+		const passAgeGate = async () => {
+			try {
+				const ageSelect = page.locator('select#ageYear').first();
+				await ageSelect.waitFor({ timeout: 3_000 });
+				await ageSelect.selectOption('2000');
+
+				const viewPageAnchor = page.locator('a:has(span:text("View Page"))').first();
+				await viewPageAnchor.waitFor({ timeout: 5_000 });
+				await viewPageAnchor.dispatchEvent('click');
+			} catch {}
+		};
+		const owned = page.locator('.game_area_already_owned').first();
+		const isOwned = () => owned.isVisible().catch(() => false);
+
 		await page.goto(URL_REDEEM, { waitUntil: 'domcontentloaded' });
 		await page
 			.waitForSelector('a:has(div.discount_pct:text("-100%"))', { timeout: 15_000 })
@@ -71,20 +86,19 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 
 			try {
 				await page.goto(link, { waitUntil: 'domcontentloaded' });
-
-				try {
-					const ageSelect = page.locator('select#ageYear').first();
-					await ageSelect.waitFor({ timeout: 3_000 });
-					await ageSelect.selectOption('2000');
-
-					const viewPageAnchor = page.locator('a:has(span:text("View Page"))').first();
-					await viewPageAnchor.waitFor({ timeout: 5_000 });
-					await viewPageAnchor.dispatchEvent('click');
-				} catch {}
+				await passAgeGate();
 
 				title =
 					(await page.locator('div.apphub_AppName[role="heading"]').textContent()) ||
 					'Unknown Title';
+
+				if (await isOwned()) {
+					log.processedGames.push({
+						title,
+						status: 'already_in_library'
+					});
+					continue;
+				}
 
 				const addToAccountAnchor = page.locator('a:has(span:text("Add to Account"))').first();
 				const playGameAnchor = page.locator('a:has(span:text("Play Game"))').first();
@@ -97,14 +111,24 @@ export async function redeemSteam(manual: boolean): Promise<boolean> {
 				if (found === 'play-game') {
 					log.processedGames.push({
 						title,
-						status: 'already_in_library'
+						status: 'free_to_play'
 					});
 					continue;
 				}
 
 				await page.waitForTimeout(2000);
 				await addToAccountAnchor.dispatchEvent('click');
-				await page.waitForTimeout(2000);
+
+				let confirmed = false;
+				for (const settle of [2_000, 6_000]) {
+					await page.waitForTimeout(settle);
+					await page.goto(link, { waitUntil: 'domcontentloaded' });
+					await passAgeGate();
+					confirmed = await isOwned();
+					if (confirmed) break;
+				}
+				if (!confirmed)
+					throw new Error('claim not confirmed: product page does not show it as owned');
 
 				redeemedGames.push(title);
 				log.processedGames.push({
