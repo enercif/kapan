@@ -166,12 +166,12 @@ export async function redeemEpic(manual: boolean): Promise<boolean> {
 				await page.goto(link, { waitUntil: 'domcontentloaded' });
 
 				title =
-					(await page.locator('[data-testid="pdp-title"]').first().textContent()) ||
-					'Unknown Title';
+					(await page.locator('h1').first().textContent({ timeout: 10_000 }).catch(() => null))?.trim() ||
+					link;
 
 				const purchaseBtn = page
-					.locator('button[data-testid="purchase-cta-button"]')
-					.filter({ hasText: /\S/ });
+					.getByRole('button', { name: /^(get|in library|owned)$/i })
+					.first();
 				await purchaseBtn.waitFor({ timeout: 30_000 });
 				const btnText = (await purchaseBtn.innerText()).toLowerCase();
 
